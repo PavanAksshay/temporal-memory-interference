@@ -1,0 +1,29 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Temporal Graph Neural Networks (TGNNs) \citep{rossi2020temporal, kumar2019predicting, trivedi2019dyrep, xu2020inductive} have emerged as the foundational paradigm for modeling continuously evolving graph-structured systems, including social networks, communication platforms, financial transaction logs, and recommender systems. To capture long-range temporal dependencies without storing unbounded interaction histories, standard TGNNs maintain a local recurrent memory vector $s_u(t)$ for each node $u \in \mathcal{V}$, updating it sequentially as new interaction events arrive.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/fig1_benchmark_concept.pdf}
+    \caption{\textbf{The Parameterized $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ Temporal Recurrence Benchmark.} Initial interaction Regime $\mathcal{A}$ establishes community structure over $t \in [0, 99]$. An intervening conflicting distractor Regime $\mathcal{B}$ with independent partition structure runs for parameterized duration $T_B$. At recurrence onset ($t = 100 + T_B$), Regime $\mathcal{A}$ returns, testing whether historical predictive structure remains accessible.}
+    \label{fig:benchmark_concept}
+\end{figure*}
+
+While this continuous recurrent state formulation is effective for smooth, non-stationary temporal drift, real-world network dynamics frequently exhibit \textit{temporal recurrence}: previously dominant interaction patterns, organizational subgraphs, or behavioral regimes recur after extended intervals of conflicting activity. For example, academic collaboration clusters reactivate after summer recess, financial markets cycle between bull and bear trading regimes, and seasonal social interactions re-emerge after prolonged dormancy.
+
+This phenomenon raises a fundamental scientific question:
+\begin{quote}
+\textit{When a previously relevant temporal regime recurs after an extended conflicting regime, how much of the historical predictive information remains recoverable from a continuously updated recurrent representation?}
+\end{quote}
+
+Standard dynamic link prediction benchmarks \citep{poursafaei2022towards, kazemi2020representation} fail to isolate this question. High test-set Average Precision (AP) can arise from multiple confounding factors: the immediate topological structure of the current snapshot, exact repeated pairwise edges, or short-term recency bias. Consequently, the extent to which continuous recurrent TGNNs suffer from \textit{temporal memory interference}---the destructive overwriting of dormant historical representations by intervening distractor regimes---has remained largely uncharacterized.
+
+In this work, we formalize and empirically dissect temporal memory interference in continuous dynamic graph networks:
+\begin{enumerate}
+    \item \textbf{Controlled Recurrence Benchmark}: We introduce a parameterized $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ dynamic graph benchmark where an initial community regime $\mathcal{A}$ is followed by a conflicting distractor regime $\mathcal{B}$ of parameterized duration $T_B \in \{25, 50, 100, 200\}$, before Regime $\mathcal{A}$ recurs (Figure~\ref{fig:benchmark_concept}).
+    \item \textbf{Characterization of Temporal Memory Interference}: We demonstrate that continuous recurrent representations exhibit duration-dependent degradation, where historical recoverability steadily diminishes as $T_B$ grows. Crucially, simply increasing the recurrent memory dimension ($d_m = 64 \to 256$) does not resolve this interference.
+    \item \textbf{Decomposition of Exact vs. Structural Recurrence}: By benchmarking against EdgeBank \citep{poursafaei2022towards} and historical structural retrieval probes, we decompose historical reuse into exact pairwise edge repetition versus structural community recurrence, showing that topological invariants contain predictive signals even when exact edge overlap is suppressed.
+    \item \textbf{Memory-Augmented Architecture (MA-TGN)}: We present the Memory-Augmented Temporal Graph Network (MA-TGN), which augments continuous local node memory with an addressable episodic checkpoint memory and adaptive temporal gating. Under the evaluated synthetic protocol, MA-TGN restores evaluated link prediction performance at recurrence onset ($k_A=0$) without requiring re-adaptation steps.
+    \item \textbf{Real-World Validation with Explicit Boundaries}: Across four natural recurrence episodes each in SNAP CollegeMsg and SNAP Bitcoin-OTC, MA-TGN consistently outperforms continuous TGNs ($\Delta\text{AP} = +0.0583$ on CollegeMsg and $+0.1243$ on Bitcoin-OTC). We explicitly delineate the boundary where exact-edge memorization (EdgeBank) remains superior ($\text{AP} = 0.8763$ and $0.7753$).
+\end{enumerate}

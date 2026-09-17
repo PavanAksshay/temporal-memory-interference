@@ -1,0 +1,53 @@
+\section{Memory-Augmented Temporal Graph Networks}
+\label{sec:methods}
+
+To resolve the tension between continuous neighborhood tracking and long-term historical preservation, we introduce the \textbf{Memory-Augmented Temporal Graph Network (MA-TGN)}. MA-TGN augments standard continuous recurrent node memory with an addressable episodic checkpoint memory and an adaptive temporal gating mechanism.
+
+\subsection{Architecture Overview}
+MA-TGN consists of four coupled components:
+\begin{enumerate}
+    \item \textbf{Local Continuous Node Memory}: Maintains fast-adapting state vectors $s_u(t) \in \mathbb{R}^{d_m}$ updated via standard GRU message passing upon processing interaction events.
+    \item \textbf{Episodic Checkpoint Bank}: A bounded historical buffer storing $K$ past full-graph state snapshots $\mathcal{M}(t) = \{(\tau_k, \mathbf{k}_k, \mathbf{V}_k)\}_{k=1}^K$, where $\tau_k \le t$ is the checkpoint timestamp, $\mathbf{k}_k \in \mathbb{R}^{d_k}$ is the structural key embedding, and $\mathbf{V}_k \in \mathbb{R}^{N \times d_m}$ stores the node-memory matrix at time $\tau_k$.
+    \item \textbf{Learned Attention Router}: Queries the episodic bank using a temporal state query $q_u(t) \in \mathbb{R}^{d_k}$ to compute attention weights $\alpha_{u,k}(t)$ over historical checkpoints.
+    \item \textbf{Adaptive Temporal Gate}: Dynamically interpolates between the current recurrent state $s_u(t)$ and the retrieved historical representation $\tilde{s}_u(t)$.
+\end{enumerate}
+
+\subsection{Episodic Query Routing and Retrieval}
+At evaluation timestep $t$, for each candidate node $u$, the model generates a temporal query vector from its current recurrent state and local features:
+\begin{equation}
+    q_u(t) = \mathbf{W}_q [s_u(t) \parallel \mathbf{x}_u] + \mathbf{b}_q.
+\end{equation}
+
+The router computes attention weights across valid historical checkpoints strictly satisfying causal non-anticipation ($\tau_k \le t$):
+\begin{equation}
+    \alpha_{u,k}(t) = \frac{\exp\left(\frac{q_u(t)^\top \mathbf{k}_k}{\sqrt{d_k}}\right)}{\sum_{\tau_j \le t} \exp\left(\frac{q_u(t)^\top \mathbf{k}_j}{\sqrt{d_k}}\right)}.
+\end{equation}
+
+The retrieved historical representation $\tilde{s}_u(t)$ is formed as the attention-weighted mixture of historical node states:
+\begin{equation}
+    \tilde{s}_u(t) = \sum_{\tau_k \le t} \alpha_{u,k}(t) \mathbf{V}_k[u].
+\end{equation}
+
+\subsection{Adaptive Gating and Link Scoring}
+Rather than enforcing a fixed fusion rule, an adaptive gate $g_u(t) \in (0, 1)$ dynamically balances immediate recency against historical retrieval:
+\begin{equation}
+    g_u(t) = \sigma\left(\mathbf{W}_g [s_u(t) \parallel \tilde{s}_u(t)] + \mathbf{b}_g\right).
+\end{equation}
+
+The final node representation $h_u(t)$ combines both sources:
+\begin{equation}
+    h_u(t) = g_u(t) s_u(t) + (1 - g_u(t)) \tilde{s}_u(t).
+\end{equation}
+
+Dynamic link probabilities for candidate pair $(u, v)$ are computed via an MLP link decoder:
+\begin{equation}
+    \hat{y}_{uv}(t) = \sigma\left(\text{MLP}([h_u(t) \parallel h_v(t) \parallel h_u(t) \odot h_v(t)])\right).
+\end{equation}
+
+\subsection{Temporal Causality and Checkpoint Scheduling}
+To ensure zero target leakage:
+\begin{itemize}
+    \item Checkpoints are scheduled at regular intervals (every 10 snapshots) during training and rollout.
+    \item Future checkpoints with $\tau > t$ are explicitly masked ($\alpha_{u,k}(t) = 0$).
+    \item Memory updates for positive test edges at $t+1$ are committed strictly \textit{after} link prediction metrics for step $t+1$ are recorded.
+\end{itemize}

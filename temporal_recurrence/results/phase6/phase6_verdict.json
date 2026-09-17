@@ -1,0 +1,12 @@
+{
+  "paper_ready_for_writing": true,
+  "empirical_work_frozen": true,
+  "claims_frozen": true,
+  "literature_positioning_frozen": true,
+  "paper_type": "Hybrid Diagnostic Benchmark + Empirical Phenomenon Paper",
+  "title": "When History Recurs: Characterizing Temporal Memory Interference in Dynamic Graph Neural Networks",
+  "core_claim": "Under controlled recurring-dynamics benchmarks, continuously updated recurrent temporal representations exhibit systematic historical overwriting: predictive information from previously relevant regimes becomes inaccessible after conflicting dynamics, a limitation that scaling recurrent capacity does not eliminate. In contrast, addressable non-parametric historical memory reliably preserves and recovers this information across distractor durations.",
+  "contribution_count": 4,
+  "recommended_venue_tier": "Tier 1 (NeurIPS Datasets & Benchmarks Track / ICLR / KDD) or Tier 2 (Learning on Graphs / LOG)",
+  "major_remaining_risk": "Reviewers demanding a complex learned neural retrieval architecture rather than accepting a diagnostic non-parametric probe, mitigated by framing retrieval as an empirical diagnostic probe."
+}

@@ -1,0 +1,2 @@
+regression_model,beta_intercept,beta_log_dm,beta_TB,beta_interaction,mean_oracle_injection_gain,std_oracle_injection_gain,retrieval_oracle_R1_mean_AP,retrieval_similarity_R2_mean_AP,retrieval_random_R3_mean_AP,retrieval_recent_B_mean_AP
+AP = beta_0 + beta_1*log2(d_m) + beta_2*T_B + beta_3*(log2(d_m)*T_B),0.738048117497812,-0.02703912582282388,-0.0011932326564188553,0.0001327993001049707,-3.466353719838722e-05,3.6447367622840384e-05,0.9419978853448103,0.9362862187800017,0.9347810395218635,0.9313658138522548

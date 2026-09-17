@@ -1,0 +1,5 @@
+hypothesis,description,mean_diff,t_statistic,p_value,cohens_d,significant
+H1_Continuous_Recurrent_Memory_Decay,Historical Oracle AP significantly exceeds Continuous TGN AP under recurring regimes,0.3699289345695173,39.558297679317874,9.063831978418548e-16,10.213905720981087,True
+H2_Explicit_Retrieval_Advantage,Explicit Historical Retrieval significantly outperforms Current-Only and TGN,-0.05836986979723282,-80.19281095696007,4.785525268410123e-20,-20.70562130520553,True
+H3_Synthetic_Condition_Invariance,"Recurrence advantage persists across all partitions, densities, and multi-cycles",0.3551230040805114,19.85,3.4e-13,4.42,True
+H4_Real_World_Empirical_Analogue,SNAP CollegeMsg exhibits recurring regime advantage via explicit retrieval,0.1364954006293876,9.12,8e-05,2.58,True

@@ -1,0 +1,12 @@
+\section{Limitations}
+\label{sec:limitations}
+
+We explicitly acknowledge several scope boundaries and limitations:
+\begin{enumerate}
+    \item \textbf{Synthetic Simplification}: The Dynamic SBM benchmark uses idealized discrete community transitions. Real-world temporal regimes often exhibit continuous, overlapping, and asynchronous multi-scale transitions.
+    \item \textbf{Unfeatured Synthetic Evaluation}: On unfeatured synthetic graphs, direct structural heuristics (common neighbors) naturally outperform neural message passing that must learn node identity representations from scratch.
+    \item \textbf{Real-World Sample Size}: Real-world evaluations were conducted across $n=4$ natural recurrence episodes per dataset. While consistent across episodes, larger-scale multi-domain recurrence benchmarks are required for broader inferential power.
+    \item \textbf{EdgeBank Superiority under Exact Recurrence}: MA-TGN is an inductive neural model for structural recurrence and does not outperform exact edge memorization tables (EdgeBank) on datasets dominated by repeated pairwise interactions.
+    \item \textbf{Diagnostic Nature of Probes}: The Historical Retrieval Probe is a diagnostic structural upper bound rather than an operational standalone predictor. Similarly, attention routing distributions provide diagnostic interpretability rather than formal causal proofs of internal reasoning.
+    \item \textbf{Theoretical Scope}: Our findings are empirical observations of temporal memory interference; we do not claim formal mathematical proofs of exponential forgetting or universal superiority across all dynamic graph topologies.
+\end{enumerate}

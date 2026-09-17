@@ -1,0 +1,104 @@
+\section*{Supplementary Material}
+\appendix
+
+\section{Extended Experimental Setup and Hyperparameter Protocol}
+\label{app:hyperparameters}
+
+To ensure complete reproducibility across all comparative experiments, Table~\ref{tab:app_hyperparameters} provides the exact configuration parameters used for the synthetic DSBM recurrence benchmarks and neural model architectures.
+
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\caption{\textbf{Comprehensive Hyperparameter and Benchmark Configuration.}}
+\label{tab:app_hyperparameters}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lc}
+\toprule
+\textbf{Hyperparameter / Setting} & \textbf{Canonical Experimental Value} \\
+\midrule
+Total Nodes ($N$) & $300$ \\
+Number of Communities ($K_{\text{comm}}$) & $3$ (Equal size: 100 nodes each) \\
+Base Graph Edge Density ($\rho$) & $0.10$ \\
+Regime $\mathcal{A}$ Persistence ($\lambda_A$) & $0.35$ (Partition Seed 101) \\
+Regime $\mathcal{B}$ Persistence ($\lambda_B$) & $0.15$ (Partition Seed 202) \\
+Regime $\mathcal{C}$ Persistence ($\lambda_C$) & $0.25$ (Partition Seed 303) \\
+Distractor Durations Evaluated ($T_B$) & $\{25, 50, 100, 200\}$ snapshots \\
+Training Interval & $t \in [0, 70]$ (Initial Regime $\mathcal{A}$) \\
+Validation Interval & $t \in [71, 99]$ (Initial Regime $\mathcal{A}$) \\
+Evaluation Test Interval & $t \in [100+T_B, 149+T_B]$ (Recurring $\mathcal{A}$) \\
+Independent Random Seeds & $42, 43, 44, 45, 46, 47, 48, 49, 50, 51$ ($n=10$) \\
+Negative Edge Sampling Ratio & $1:1$ (Uniformly drawn non-connected pairs) \\
+Optimization Algorithm & Adam ($\beta_1=0.9, \beta_2=0.999$) \\
+Learning Rate & $0.005$ \\
+Weight Decay ($\ell_2$ penalty) & $10^{-4}$ \\
+Training Epochs & $10$ epochs \\
+Node Recurrent Memory Dimension ($d_m$) & $64$ (Default; swept across $\{16, 32, 64, 128, 256\}$) \\
+Episodic Memory Key Dimension ($d_k$) & $64$ \\
+Time Embedding Dimension ($d_t$) & $64$ \\
+Episodic Checkpoint Interval & Every $10$ snapshots \\
+Maximum Episodic Bank Capacity ($K$) & $10$ checkpoints (Default; swept $\{1, 2, 4, 8, 16, 32\}$) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Eight-Point Temporal Non-Anticipation and Leakage Audit}
+\label{app:leakage}
+
+Temporal link prediction benchmarks can easily suffer from subtle temporal leakage. To guarantee absolute causality and fair comparison, all models were evaluated under the strict eight-point non-anticipation protocol summarized in Table~\ref{tab:app_leakage}.
+
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\caption{\textbf{Eight-Point Temporal Non-Anticipation and Causality Verification.}}
+\label{tab:app_leakage}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llc}
+\toprule
+\textbf{Audit Item} & \textbf{Verification Protocol \& Invariant} & \textbf{Status} \\
+\midrule
+1. Candidate Edge Parity & Identical candidate edge arrays evaluated per timestep & \textbf{PASS} \\
+2. Target Label Parity & Ground-truth positive/negative labels strictly identical & \textbf{PASS} \\
+3. Strict Temporal Causality & Only historical interactions with $\tau \le t$ accessible & \textbf{PASS} \\
+4. Post-Evaluation Memory Update & Test edges enter memory strictly \textit{after} scoring & \textbf{PASS} \\
+5. Unfeatured Graph Symmetry & Node IDs unfeatured; no hardcoded partition labels & \textbf{PASS} \\
+6. Episodic Checkpoint Masking & Future checkpoints with timestamp $\tau > t$ masked ($-\infty$) & \textbf{PASS} \\
+7. Regime Boundary Blindness & Zero manual regime transition flags provided to models & \textbf{PASS} \\
+8. Shared Negative Generation & Deterministic PRNG seed offset ($seed + t$) for negatives & \textbf{PASS} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Analytical Memory Footprint and Parameter Accounting}
+\label{app:memory_accounting}
+
+For a graph of $N$ nodes, node memory dimension $d_m$, episodic key dimension $d_k$, and $K$ stored episodic checkpoints under standard single-precision 32-bit floating point arithmetic ($4$ bytes per float), the memory footprint is derived analytically as:
+\begin{equation}
+    M_{\text{RAM}} = \frac{4 (N d_m + K d_k + K N d_m)}{1024} \text{ KB}.
+\end{equation}
+For our canonical synthetic configuration ($N = 300$, $d_m = 64$, $d_k = 64$, $K = 10$ checkpoints):
+\begin{equation}
+    M_{\text{RAM}} = \frac{4 (19,200 + 640 + 192,000)}{1024} = \mathbf{827.5\text{ KB}}.
+\end{equation}
+For a larger network of $N = 10,000$ nodes with $K = 20$ checkpoints ($d_m = 64, d_k = 64$):
+\begin{equation}
+    M_{\text{RAM}} = \frac{4 (640,000 + 1,280 + 12,800,000)}{1024} \approx 52.5\text{ MB},
+\end{equation}
+confirming that addressable episodic state caching requires modest memory budgets well within modern GPU/host RAM limits.
+
+\section{Real-World Recurrence Episode Specifications}
+\label{app:real_world}
+
+We identify natural multi-week recurrence episodes in two standard SNAP continuous-time interaction networks:
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \item \textbf{SNAP CollegeMsg} ($1,899$ nodes, $59,835$ interactions): \textbf{Ep 1}: W11 $\to$ W12 $\to$ W13; \textbf{Ep 2}: W8 $\to$ W9--18 $\to$ W19; \textbf{Ep 3}: W11 $\to$ W12--13 $\to$ W14; \textbf{Ep 4}: W10 $\to$ W11--12 $\to$ W13.
+    \item \textbf{SNAP Bitcoin-OTC} ($5,881$ accounts, $35,592$ trust ratings): Four multi-month partitions isolating high-volume trader trust clusters reactivating after dormant market intervals.
+\end{enumerate}
+
+\section{Early Benchmark Prototypes and Failure Modes}
+\label{app:benchmark_history}
+
+For scientific transparency, we briefly note why naive recurrence benchmarks were rejected during early pilot studies. Initial prototypes used unconstrained dynamic Erd\H{o}s-R\'enyi models where density shifted drastically between regimes ($\rho_A = 0.20 \to \rho_B = 0.05$). In such settings, models could exploit trivial marginal density changes as regime indicators without capturing underlying community topology. The canonical benchmark adopted in this work strictly enforces identical marginal densities ($\rho = 0.10$) across all regimes, isolating structural community invariants from trivial scalar statistical artifacts.
+

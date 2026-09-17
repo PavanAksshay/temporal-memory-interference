@@ -1,0 +1,17 @@
+claim_id,location,value,source,canonical_value,match
+NUM-001,CollegeMsg_Results,0.713,table_h_collegemsg_episodes.csv,0.7135,MATCH
+NUM-002,CollegeMsg_Results,0.655,table_h_collegemsg_episodes.csv,0.6552,MATCH
+NUM-003,Bitcoin_OTC_Results,0.691,table_i_bitcoin_otc_episodes.csv,0.6913,MATCH
+NUM-004,Bitcoin_OTC_Results,0.567,table_i_bitcoin_otc_episodes.csv,0.5670,MATCH
+NUM-005,Bitcoin_OTC_Results,0.662,table_i_bitcoin_otc_episodes.csv,0.6620,MATCH
+NUM-006,CollegeMsg_Results,0.876,table_h_collegemsg_episodes.csv,0.8763,MATCH
+NUM-007,Bitcoin_OTC_Results,0.775,table_i_bitcoin_otc_episodes.csv,0.7753,MATCH
+NUM-008,Synthetic_Baselines,0.759,table_a_baseline_reproduction.csv,0.7588,MATCH
+NUM-009,Synthetic_Baselines,0.760,table_a_baseline_reproduction.csv,0.7600,MATCH
+NUM-010,Synthetic_Baselines,0.788,table_a_baseline_reproduction.csv,0.7876,MATCH
+NUM-011,Synthetic_Ablation,0.6519,table_c_component_ablation.csv,0.65186,MATCH
+NUM-012,Synthetic_Ablation,0.6515,table_c_component_ablation.csv,0.65152,MATCH
+NUM-013,Memory_Accounting,827.5 KB,table_e_memory_parameter_comparison.csv,827.5 KB,MATCH
+NUM-014,Latency_Profiling,sub-5 us,table_d_memory_budget.csv,0.91-4.79 us,MATCH
+NUM-015,Reexposure_Dynamics,k_A=0,table_g_reexposure_dynamics.csv,k_A=0 (Onset),MATCH
+NUM-016,Structural_Recurrence,Jaccard < 0.03,Phase 6.5 & Phase 10 Decomposition,0.0268,MATCH

@@ -1,0 +1,7 @@
+id,name,classification,basis
+C1,Controlled A->B->A Benchmark for Historical Recoverability,Strong,"Formal DSBM generator with strict zero-leakage verification, calibrated difficulty, and orthogonal partition controls."
+C2,Distractor Duration vs Recurrent Recoverability Relationship,Strong,Empirical curve showing monotonic decay of continuous recurrent state performance as T_B increases across multiple seeds.
+C3,Capacity x Distractor-Duration Response Surface,Strong,Rigorous grid sweep across d_m in {16..256} demonstrating bounded capacity cannot overcome destructive overwrite.
+C4,Continuous Compression vs Addressable Historical Memory Distinction,Strong,Budget-matched comparison proving addressable indexing dominates parameter-heavy recurrent memory.
+C5,Synthetic-to-Real Evidence on SNAP CollegeMsg,Moderate,Unsupervised window clustering identifies real recurring episodes where retrieval consistently outperforms continuous TGN under block bootstrap.
+C6,Simple Retrieval Mechanism Restoring Historical Structure,Strong,Non-parametric similarity/oracle retrieval restores high AP without requiring recurrent updates.

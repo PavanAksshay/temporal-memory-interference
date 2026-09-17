@@ -1,0 +1,94 @@
+\section*{Supplementary Material}
+\appendix
+
+\section{Extended Experimental Setup and Hyperparameters}
+\label{app:hyperparameters}
+
+\begin{table}[h]
+\centering
+\small
+\caption{\textbf{Comprehensive Hyperparameter Configuration.}}
+\label{tab:app_hyperparameters}
+\begin{tabular}{lc}
+\toprule
+\textbf{Hyperparameter} & \textbf{Canonical Value} \\
+\midrule
+Nodes ($N$) & $300$ \\
+Communities ($K_{\text{comm}}$) & $3$ (Equal size: 100 nodes each) \\
+Base Edge Density ($\rho$) & $0.10$ \\
+Regime A Persistence ($\lambda_A$) & $0.35$ (Seed 101) \\
+Regime B Persistence ($\lambda_B$) & $0.15$ (Seed 202) \\
+Regime C Persistence ($\lambda_C$) & $0.25$ (Seed 303) \\
+Distractor Durations ($T_B$) & $\{25, 50, 100, 200\}$ \\
+Training Timesteps & $t \in [0, 70]$ (Regime A) \\
+Validation Timesteps & $t \in [71, 99]$ (Regime A) \\
+Test Timesteps & $t \in [100+T_B, 149+T_B]$ (Regime A) \\
+Random Seeds & $42, 43, 44, 45, 46, 47, 48, 49, 50, 51$ \\
+Negative Sampling Ratio & $1:1$ (Uniform non-connected pairs) \\
+Optimizer & Adam \\
+Learning Rate & $0.005$ \\
+Weight Decay & $10^{-4}$ \\
+Training Epochs & $10$ \\
+Node Memory Dimension ($d_m$) & $64$ \\
+Episodic Key Dimension ($d_k$) & $64$ \\
+Time Dimension ($d_t$) & $64$ \\
+Checkpoint Interval & Every $10$ snapshots \\
+Maximum History Checkpoints ($K$) & $10$ (Default) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Detailed Leakage and Causal Non-Anticipation Audit}
+\label{app:leakage}
+
+\begin{table}[h]
+\centering
+\small
+\caption{\textbf{Eight-Point Temporal Non-Anticipation Audit.}}
+\label{tab:app_leakage}
+\begin{tabular}{llc}
+\toprule
+\textbf{Audit Item} & \textbf{Verification Criterion} & \textbf{Status} \\
+\midrule
+1. Candidate Parity & Shared candidate edge arrays per timestep & \textbf{PASS} \\
+2. Label Parity & Ground-truth labels identical across models & \textbf{PASS} \\
+3. Temporal Causality & Only interactions with $\tau \le t$ accessible & \textbf{PASS} \\
+4. Target Isolation & Test edges enter memory strictly after scoring & \textbf{PASS} \\
+5. Permutation Invariance & Node IDs unfeatured; no hardcoded tags & \textbf{PASS} \\
+6. Checkpoint Masking & Future checkpoints ($\tau > t$) strictly masked & \textbf{PASS} \\
+7. Regime Blindness & Zero manual regime flags ($A, B, C$) provided & \textbf{PASS} \\
+8. Negative Parity & Shared random seed offset ($seed + t$) & \textbf{PASS} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Exact Memory Accounting Derivations}
+\label{app:memory_accounting}
+
+For a graph with $N$ nodes, memory dimension $d_m$, key dimension $d_k$, and $K$ stored episodic checkpoints under 32-bit floating point precision ($4$ bytes per float):
+\begin{align}
+    \text{Continuous Node Memory} &= N \cdot d_m \cdot 4 \text{ bytes}, \\
+    \text{Episodic Keys} &= K \cdot d_k \cdot 4 \text{ bytes}, \\
+    \text{Episodic Values} &= K \cdot N \cdot d_m \cdot 4 \text{ bytes}, \\
+    \text{Total RAM} &= \frac{4 (N d_m + K d_k + K N d_m)}{1024} \text{ KB}.
+\end{align}
+
+For the canonical configuration ($N=300, d_m=64, d_k=64, K=10$):
+\begin{align}
+    \text{Total RAM} &= \frac{4 (19,200 + 640 + 192,000)}{1024} = \mathbf{827.5\text{ KB}}.
+\end{align}
+
+\section{Real-World Recurrence Episode Specifications}
+\label{app:real_world}
+
+\begin{itemize}
+    \item \textbf{SNAP CollegeMsg}:
+    \begin{itemize}
+        \item Episode 1: Initial window Week 11 $\to$ Distractor Weeks 12 $\to$ Recurrence Week 13.
+        \item Episode 2: Initial window Week 8 $\to$ Distractor Weeks 9--18 $\to$ Recurrence Week 19.
+        \item Episode 3: Initial window Week 11 $\to$ Distractor Weeks 12--13 $\to$ Recurrence Week 14.
+        \item Episode 4: Initial window Week 10 $\to$ Distractor Weeks 11--12 $\to$ Recurrence Week 13.
+    \end{itemize}
+    \item \textbf{SNAP Bitcoin-OTC}:
+    Four multi-month trust rating episodes partitioned across high-volatility transaction clusters.
+\end{itemize}

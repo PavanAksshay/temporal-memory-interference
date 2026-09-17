@@ -1,0 +1,44 @@
+{
+  "verdict": "INVALID",
+  "runtime_seconds": 189.21333003044128,
+  "criteria": {
+    "density_parity": {
+      "passed": true,
+      "mean_density_diff": 0.0002708695652173895,
+      "max_density_diff": 0.0007907469342251783,
+      "threshold": 0.05
+    },
+    "temporal_dynamics_divergence": {
+      "passed": true,
+      "autocorr_A": 0.7593555646055029,
+      "autocorr_B": 0.1821521595929577
+    },
+    "historical_relevance": {
+      "passed": false,
+      "mean_delta_old": 0.009978981787053897,
+      "std_delta_old": 0.00033290304169168597,
+      "min_delta_old": 0.009581132550166545,
+      "threshold": 0.03
+    },
+    "recency_misleading": {
+      "passed": true,
+      "mean_delta_recent": -0.002205757574350349,
+      "std_delta_recent": 0.00021748606187347967,
+      "threshold": 0.01
+    },
+    "regime_specificity": {
+      "passed": false,
+      "delta_old_in_A": 0.009978981787053897,
+      "delta_old_in_C": 0.021461460788921048
+    },
+    "zero_leakage_verified": {
+      "passed": true
+    }
+  },
+  "recovery_latencies": {
+    "mean_t_recover_oracle": 0.0,
+    "mean_t_recover_current": 0.0,
+    "mean_t_recover_recent": 0.0
+  },
+  "verdict_rationale": "One or more core scientific validity requirements failed."
+}

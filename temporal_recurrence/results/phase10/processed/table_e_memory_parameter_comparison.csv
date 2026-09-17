@@ -1,0 +1,6 @@
+Model,Node_Memory_Bytes,Episodic_Keys_Bytes,Episodic_Values_Bytes,Total_Memory_KB,Trainable_Parameters,Inference_Latency_us
+Canonical TGN (d_m=64),76800,0,0,75.0,45697,142.5
+TGN (Expanded Capacity d_m=256),307200,0,0,300.0,234113,285.0
+TGN + Episodic Memory (K=10),76800,2560,768000,827.5,45697,168.0
+"MA-TGN (Proposed, K=10)",76800,2560,768000,827.5,62274,184.2
+MA-TGN w/o Recurrent Memory (K=10),0,2560,768000,752.5,41730,135.0

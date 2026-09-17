@@ -1,0 +1,67 @@
+# Pilot Configuration for Phase 0.1 Recurrence Benchmark
+project:
+  name: "temporal_recurrence_phase0_1"
+  version: "1.1.0"
+
+generator:
+  num_nodes: 300
+  num_communities: 3
+  mode: "temporal_plus_structure" # "temporal_only" or "temporal_plus_structure"
+  
+regimes:
+  A:
+    target_density: 0.10
+    persistence: 0.35
+    within_comm_multiplier: 4.0
+    partition_seed: 101
+  B:
+    target_density: 0.10
+    persistence: 0.15
+    within_comm_multiplier: 4.0
+    partition_seed: 202
+  C:
+    target_density: 0.10
+    persistence: 0.25
+    within_comm_multiplier: 4.0
+    partition_seed: 303
+
+calibration:
+  max_density_diff: 0.05
+  num_samples: 150
+  burn_in: 50
+
+sequences:
+  exp1_stationary:
+    - ["A", 400]
+  exp2_drift:
+    - ["A", 200]
+    - ["B", 200]
+  exp3_recurrence:
+    - ["A", 100]
+    - ["B", 200]
+    - ["A", 100]
+  exp4_b_durations: [10, 25, 50, 100, 200]
+  exp4_base_a_duration: 100
+  exp5_non_recurring:
+    - ["A", 100]
+    - ["B", 200]
+    - ["C", 100]
+  exp6_extended_recurrence:
+    - ["A", 100]
+    - ["B", 100]
+    - ["C", 100]
+    - ["A", 100]
+
+evaluation:
+  seeds: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+  recent_history_windows: [1, 5, 10]
+  relevance_lags: [1, 5, 10, 25, 50, 100, 150, 200, 250, 300]
+  recovery_threshold: 0.90
+  recovery_sustained_steps: 5
+  negative_sampling_ratio: 1.0
+
+output:
+  results_dir: "results/phase0_1"
+  raw_dir: "results/phase0_1/raw"
+  processed_dir: "results/phase0_1/processed"
+  figures_dir: "results/phase0_1/figures"

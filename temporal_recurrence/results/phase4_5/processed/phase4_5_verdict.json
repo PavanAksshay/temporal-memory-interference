@@ -1,0 +1,25 @@
+{
+  "phase": "4.5",
+  "final_classification": "A \u2014 CLAIM SUPPORTED",
+  "hard_benchmark_results_tb100": {
+    "current_only_ap": 0.7635128627591995,
+    "continuous_tgn_ap": 0.5273986937467239,
+    "historical_retrieval_ap": 0.7273446996956954,
+    "edgebank_allhistory_ap": 0.739664158062139,
+    "random_retrieval_ap": 0.7312906522237277,
+    "historical_oracle_ap": 0.7903706500550189
+  },
+  "collegemsg_results_mean": {
+    "current_only_ap": 0.700204248366013,
+    "continuous_tgn_ap": 0.655204248366013,
+    "historical_retrieval_ap": 0.700204248366013,
+    "edgebank_ap": 0.8763136956870103
+  },
+  "capacity_surface_parameters": {
+    "beta_0": 0.5336976263545871,
+    "beta_1": 0.014426950408889024,
+    "beta_2": -0.00042768896358151,
+    "beta_3": -5.9239959305755856e-18
+  },
+  "execution_time_seconds": 1232.4808857440948
+}

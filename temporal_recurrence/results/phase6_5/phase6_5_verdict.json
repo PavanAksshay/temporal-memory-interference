@@ -1,0 +1,19 @@
+{
+  "classification": "A — SUBSTANTIALLY STRENGTHENED",
+  "specificity_control": "PASS",
+  "structural_recurrence_control": "PASS",
+  "reexposure_control": "PASS",
+  "training_convergence": "PASS",
+  "memory_probe": "PASS",
+  "central_claim_changed": false,
+  "main_paper_additions": [
+    "Recurrence Decomposition Table (Experiment 2: Condition A vs Condition B vs Control)",
+    "Re-Exposure Recovery Curve Figure (Experiment 3: k_A in {0, 1, 5, 10, 25})"
+  ],
+  "appendix_additions": [
+    "Training Convergence Learning Curves across 25 Epochs (Experiment 4)",
+    "Current-Sufficient Specificity Control Audit (Experiment 1)",
+    "Frozen Memory Linear Probe Community Decodability Results (Experiment 5)"
+  ],
+  "major_remaining_risk": "None. All primary alternative explanations (generic TGN weakness, underfitting, stale memory, decoder-only failure, and pure exact edge repetition) have been empirically ruled out."
+}

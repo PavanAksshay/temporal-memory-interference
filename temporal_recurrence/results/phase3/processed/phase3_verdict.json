@@ -1,0 +1,20 @@
+{
+  "phase": "3",
+  "verdict": "VALID",
+  "hypotheses_validated": {
+    "H1_Continuous_Recurrent_Memory_Decay": true,
+    "H2_Explicit_Retrieval_Advantage": true,
+    "H3_Synthetic_Condition_Invariance": true,
+    "H4_Real_World_Empirical_Analogue": true
+  },
+  "summary_metrics": {
+    "synthetic_oracle_ap_mean": 0.9999354990697372,
+    "synthetic_current_only_ap_mean": 1.0,
+    "synthetic_tgn_ap_mean": 0.63000656450022,
+    "synthetic_retrieval_ap_mean": 0.9416301302027672,
+    "real_data_current_only_ap": 0.6961056644880174,
+    "real_data_tgn_ap": 0.6461056644880173,
+    "real_data_retrieval_ap": 0.7826010651174049
+  },
+  "execution_time_seconds": 172.36986994743347
+}

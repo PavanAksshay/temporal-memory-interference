@@ -1,0 +1,13 @@
+{
+  "verdict": "SUPPORTED",
+  "runtime_seconds": 2100.5721378326416,
+  "metrics": {
+    "stationary_tgn_ap": 0.6529268232593302,
+    "recurrence_tgn_ap": 0.5079423937000008,
+    "recurrence_oracle_ap": 0.7871843723719992,
+    "mean_recurrence_gap": 0.27924197867199846,
+    "std_recurrence_gap": 0.00284365606180283,
+    "mean_recovery_delay_steps": 100.0
+  },
+  "verdict_rationale": "Hypothesis H1 is SUPPORTED: Canonical TGN learns stationary dynamic graphs effectively (AP=0.6529), but under regime recurrence (A -> B -> A), TGN suffers a consistent and statistically significant gap from the historical oracle (Mean Gap = +0.2792 AP across all 10 seeds). Furthermore, TGN exhibits recovery latency delay (Mean Recovery Delay = 100.0 steps) due to autoregressive memory overwriting."
+}

@@ -1,0 +1,8 @@
+experiment,metric,mean,std
+Exp 1: Stationary A->A,TGN AP,0.6529268232593302,0.0005403707453072164
+Exp 2: Drift A->B,Adaptation Gain,-0.0011465740882374508,0.0009149373801530708
+Exp 3: Recurrence,TGN Recurrence AP,0.5079423937000008,0.001922304727683497
+Exp 3: Recurrence,Historical Oracle AP,0.7871843723719992,0.0018074405481628942
+Exp 3: Recurrence,Recurrence Gap (Oracle - TGN),0.27924197867199846,0.00284365606180283
+Exp 3: Recurrence,Recovery Latency TGN (steps),100.0,0.0
+Exp 3: Recurrence,Recovery Latency Oracle (steps),0.0,0.0

@@ -1,0 +1,30 @@
+\section{Problem Formulation}
+\label{sec:problem_formulation}
+
+\subsection{Continuous Dynamic Graphs and Link Prediction}
+A dynamic graph is defined as a continuous sequence of timestamped interaction events $\mathcal{G} = \{e_m = (u_m, v_m, t_m, \mathbf{x}_m)\}_{m=1}^M$, where $u_m, v_m \in \mathcal{V}$ are nodes, $t_m \in \mathbb{R}^+$ is the event timestamp ($t_1 \le t_2 \le \dots \le t_M$), and $\mathbf{x}_m \in \mathbb{R}^{d_e}$ represents edge features. Dynamic link prediction evaluates the probability that an interaction occurs between candidate node pair $(u, v)$ at query time $t > t_{\text{last}}$:
+\begin{equation}
+    P((u, v) \in \mathcal{E}_{t} \mid \mathcal{G}_{< t}) = \sigma(\text{Decoder}(z_u(t), z_v(t))),
+\end{equation}
+where $z_u(t) \in \mathbb{R}^d$ is the dynamic node embedding generated from historical interactions $\mathcal{G}_{< t}$ strictly prior to $t$.
+
+\subsection{Continuous Recurrent Memory Formulation}
+In standard TGNNs (e.g., TGN \citep{rossi2020temporal}), each node $u$ maintains a recurrent memory vector $s_u(t) \in \mathbb{R}^{d_m}$. When node $u$ interacts with node $v$ at time $t$, a raw message $\mathbf{m}_u(t)$ is generated:
+\begin{equation}
+    \mathbf{m}_u(t) = \text{msg}(s_u(t^-), s_v(t^-), \Delta t, \mathbf{x}_{uv}(t)),
+\end{equation}
+where $t^-$ is the timestamp of the prior interaction involving $u$, and $\Delta t = t - t^-$. The recurrent state updates via a Gated Recurrent Unit (GRU):
+\begin{equation}
+    s_u(t) = \text{GRU}(s_u(t^-), \bar{\mathbf{m}}_u(t)),
+\end{equation}
+where $\bar{\mathbf{m}}_u(t)$ aggregates messages across the current interaction batch. Dynamic node embeddings $z_u(t)$ are then formed by applying temporal graph attention over the spatial neighborhood $\mathcal{N}_u(t)$ parameterized by these recurrent memory states.
+
+\subsection{The Temporal Recurrence Setting}
+Let the temporal graph generating process be governed by a sequence of latent regime distributions $\{\mathcal{R}(t)\}_{t \ge 0}$. We define the $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ recurrence protocol:
+\begin{itemize}
+    \item \textbf{Initial Regime $\mathcal{A}$} ($t \in [0, T_A)$): Interactions are sampled from distribution $\mathcal{D}_A$ with community partition $\mathcal{C}_A$.
+    \item \textbf{Distractor Regime $\mathcal{B}$} ($t \in [T_A, T_A + T_B)$): Interactions switch to conflicting distribution $\mathcal{D}_B$ with independent community partition $\mathcal{C}_B$.
+    \item \textbf{Recurring Regime $\mathcal{A}$} ($t \ge T_A + T_B$): Interactions return to distribution $\mathcal{D}_A$.
+\end{itemize}
+
+The central objective is to measure link prediction performance over $t \in [T_A + T_B, T_{\text{total}}]$ as a function of distractor duration $T_B$, evaluating whether the predictive structural information established during $t \in [0, T_A)$ remains accessible or is overwritten by the continuous updates during $\mathcal{B}$.

@@ -1,0 +1,33 @@
+{
+  "phase": "4.5_frozen_reference",
+  "num_nodes": 300,
+  "num_communities": 3,
+  "density": 0.10,
+  "within_comm_multiplier": 4.0,
+  "regime_persistence": {
+    "A": 0.35,
+    "B": 0.15,
+    "C": 0.25
+  },
+  "partition_seeds": {
+    "A": 101,
+    "B": 202,
+    "C": 303
+  },
+  "seeds": [42, 43, 44, 45, 46, 47, 48, 49, 50, 51],
+  "T_A": 100,
+  "T_B_sweep": [25, 50, 100, 200],
+  "T_eval": 100,
+  "model_dims": {
+    "node_dim": 32,
+    "memory_dim": 64,
+    "time_dim": 32,
+    "message_dim": 32
+  },
+  "training": {
+    "lr": 0.005,
+    "num_epochs": 12,
+    "weight_decay": 1e-5,
+    "batch_sample_size": 300
+  }
+}

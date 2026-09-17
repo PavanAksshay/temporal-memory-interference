@@ -1,0 +1,68 @@
+{
+  "phase": "Phase 8",
+  "project_title": "When History Recurs: Characterizing Temporal Memory Interference in Dynamic Graph Neural Networks",
+  "verdict_timestamp": "2026-09-08T11:51:00Z",
+  "verification_gate": {
+    "latex_project_created": true,
+    "paper_compiles_cleanly": true,
+    "pdf_visually_audited": true,
+    "numerical_consistency": "PASS",
+    "claim_consistency": "PASS",
+    "citation_consistency": "PASS",
+    "leakage_discussion": "PASS",
+    "statistical_unit_correct": "PASS",
+    "edge_bank_baseline": "PASS",
+    "structural_recurrence_analysis": "PASS",
+    "limitations_adequate": "PASS",
+    "reproducibility_package": "PASS",
+    "reviewer_attack_complete": true,
+    "overclaim_audit": "PASS"
+  },
+  "canonical_metrics": {
+    "hard_synthetic_tb_100": {
+      "historical_oracle": 0.7904,
+      "current_only": 0.7635,
+      "edgebank_bounded_a": 0.7423,
+      "edgebank_all_history": 0.7397,
+      "historical_retrieval": 0.7273,
+      "random_retrieval": 0.7313,
+      "continuous_tgn": 0.5274,
+      "tgn_no_memory": 0.5328
+    },
+    "distractor_decay": {
+      "tgn_tb_25": 0.5942,
+      "tgn_tb_50": 0.5420,
+      "tgn_tb_100": 0.5274,
+      "tgn_tb_200": 0.5028
+    },
+    "capacity_surface": {
+      "intercept": 0.5337,
+      "capacity_slope_beta1": 0.0144,
+      "distractor_slope_beta2": -0.00043,
+      "r2": 0.892
+    },
+    "specificity_control": {
+      "current_only": 0.9506,
+      "historical_oracle": 0.9556,
+      "historical_retrieval": 0.8994,
+      "continuous_tgn": 0.5427
+    },
+    "recurrence_decomposition": {
+      "exact_recurrence_jaccard": 0.2312,
+      "exact_recurrence_edgebank": 0.8841,
+      "structural_recurrence_jaccard": 0.0268,
+      "structural_recurrence_edgebank": 0.5847,
+      "structural_recurrence_retrieval": 0.6204,
+      "retrieval_vs_edgebank_gain": 0.0357,
+      "p_value": 2.4e-8
+    },
+    "collegemsg_real_data": {
+      "n_episodes": 4,
+      "mean_current_only": 0.7002,
+      "mean_continuous_tgn": 0.6552,
+      "mean_historical_retrieval": 0.7002,
+      "mean_edgebank_all_history": 0.8763
+    }
+  },
+  "final_status": "READY FOR SUBMISSION"
+}

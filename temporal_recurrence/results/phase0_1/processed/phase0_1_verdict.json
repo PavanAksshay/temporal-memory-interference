@@ -1,0 +1,51 @@
+{
+  "verdict": "VALID",
+  "runtime_seconds": 223.053160905838,
+  "criteria": {
+    "zero_leakage": {
+      "passed": true
+    },
+    "density_parity": {
+      "passed": true,
+      "mean_diff": 0.0001089409141582981
+    },
+    "temporal_divergence": {
+      "passed": true,
+      "autocorr_A": 0.30875140795257094,
+      "autocorr_B": 0.13015433564590076
+    },
+    "current_only_difficulty": {
+      "passed": true,
+      "mean_current_ap": 0.7507803855189726
+    },
+    "historical_relevance": {
+      "passed": true,
+      "mean_delta_old": 0.03663662623512552,
+      "std_delta_old": 0.0006776461490813491,
+      "min_delta_old": 0.03578186976818698
+    },
+    "recurrence_specificity": {
+      "passed": true,
+      "delta_old_in_A": 0.03663662623512552,
+      "delta_old_in_C": -0.01786688564236457
+    },
+    "recency_not_equivalent": {
+      "passed": true,
+      "mean_delta_recent": 0.0044924702868510465
+    },
+    "recovery_measurable": {
+      "passed": true,
+      "t_recover_oracle": 0.0,
+      "t_recover_current": 0.0
+    },
+    "effect_stability": {
+      "passed": true,
+      "std_delta_old": 0.0006776461490813491
+    },
+    "random_control_distinct": {
+      "passed": true,
+      "mean_delta_random": 0.008137156979572702
+    }
+  },
+  "verdict_rationale": "All 10 scientific validity criteria satisfied: (1) Zero leakage verified; (2) Marginal density parity (|A-B| <= 0.05); (3) Temporal dynamics divergence; (4) Current-only AP is in non-trivial range (substantially imperfect); (5) Historical A provides genuine, statistically robust conditional gain (mean \u0394_old > +0.03); (6) Recurrence specificity confirmed (historical A does not benefit control C); (7) Recent B is unhelpful/misleading; (8) Recovery latency advantage is measurable; (9) Effect is highly stable across 10 random seeds; (10) Random-history negative control fails to reproduce historical gain."
+}

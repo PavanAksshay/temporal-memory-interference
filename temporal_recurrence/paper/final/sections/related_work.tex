@@ -1,0 +1,20 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\subsection{Continuous-Time Temporal Graph Representation Learning}
+Continuous-time dynamic graph neural networks \citep{rossi2020temporal, trivedi2019dyrep, kumar2019predicting, kazemi2020representation} model fine-grained interaction sequences by maintaining local node-memory states $s_u(t)$ updated via recurrent architectures (e.g., GRUs or RNNs). Spatial-temporal attention layers (e.g., TGAT \citep{xu2020inductive} and CAW-N \citep{wang2021inductive}) aggregate temporal neighborhoods around these memory states. While effective for continuous non-stationary drift, these models assume that past representations can be smoothly compressed into fixed-dimensional vectors without isolating historical regimes from intervening distractor dynamics.
+
+\subsection{Long-History and Memory-Free Temporal Link Prediction}
+Recent work has investigated alternative historical representations. \citet{sankar2023craft} (CRAFT, NeurIPS 2025) demonstrated that strong dynamic link prediction can be achieved on standard benchmarks without explicit recurrent memory or neighborhood aggregation. Concurrently, sequence-based architectures such as DyGFormer \citep{kazemi2020representation} employ long-context self-attention over truncated interaction sequences. We emphasize that our study does not claim that recurrent memory is universally required for dynamic link prediction; rather, our investigation is diagnostic: for systems that rely on finite recurrent state compression, we characterize how accessible historical predictive information remains when prior structural regimes recur.
+
+\subsection{Recurring Interactions and Exact Historical Memorization}
+\citet{poursafaei2022towards} established EdgeBank as an essential non-parametric baseline that tracks exact historical interaction tuples $(u, v)$ via lookup memory tables. EdgeBank demonstrates that memorizing exact edge co-occurrences often outperforms complex neural representations on benchmarks with high pairwise repetition. Our work builds upon this insight by explicitly formalizing the distinction between \textit{exact edge recurrence} (which EdgeBank captures completely) and \textit{structural recurrence}, where interaction topologies share latent community organization even when exact pairwise edge overlap is suppressed.
+
+\subsection{Continual Graph Learning and Historical Knowledge Retention}
+Continual graph learning (CGL) \citep{kou2020continual, kirkpatrick2017overcoming} investigates catastrophic forgetting in graph neural networks, primarily under task-incremental or class-incremental setups with shifting objective functions. In contrast, our setting addresses \textit{in-stream temporal recurrence}: the underlying dynamic link prediction objective and node set remain fixed, while the generative interaction regime undergoes multi-phase shifts ($\mathcal{A} \to \mathcal{B} \to \mathcal{A}$) within a single continuous event stream.
+
+\subsection{Episodic and External Memory in Graph Learning}
+External memory mechanisms and experience replay buffers have been explored in static continual graph learning \citep{kou2020continual} to interleave historical subgraphs into gradient updates. In our framework, we do not claim episodic memory itself as a standalone invention; rather, we introduce an addressable episodic checkpoint memory (MA-TGN) as an empirical diagnostic intervention to evaluate whether dormant structural states remain externally recoverable when overwritten in continuous recurrent node memories.
+
+\subsection{Recurring and Periodic Temporal Dynamics}
+Periodic graph models \citep{gravina2023anti} capture seasonal or harmonic interaction rhythms using Fourier or anti-symmetric dynamical systems. We distinguish our work from periodic modeling: rather than assuming stationary continuous oscillations, our parameterized benchmark investigates discrete, non-stationary conflicting regime shifts, providing controlled causal measurements of historical recoverability as a function of distractor duration $T_B$.

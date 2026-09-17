@@ -1,0 +1,10 @@
+{
+  "phase": "5",
+  "classification": "B — NOVEL BUT MUST BE NARROWLY POSITIONED",
+  "novelty_risk": "LOW",
+  "paper_type": "Hybrid Diagnostic Benchmark + Empirical Phenomenon Paper",
+  "recommended_positioning": "Continuous-time temporal graph neural networks frequently rely on recurrent memory banks to compress event history into compact node representations. Under controlled recurring-dynamics benchmarks (A -> B -> A), we show that continuous recurrent representations undergo systematic historical overwriting: predictive information from previously relevant regimes becomes inaccessible after conflicting dynamics, a limitation that scaling recurrent capacity does not eliminate. In contrast, addressable non-parametric historical memory reliably preserves and recovers this information across distractor durations. We further disentangle exact edge memorization (EdgeBank) from higher-order structural retrieval and validate the empirical phenomenon across recurring interaction episodes in real-world temporal networks.",
+  "recommended_title": "When History Recurs: Characterizing Temporal Memory Interference in Dynamic Graph Neural Networks",
+  "strongest_novel_contribution": "The empirical characterization of temporal memory interference in recurrent temporal GNNs under recurring dynamics, isolating the distractor duration response curve (T_B) and demonstrating that addressable historical indexing overcomes the capacity bounds of lossy continuous recurrent state compression.",
+  "major_limitation": "Real-world temporal graphs contain limited verified recurrence episodes (n=4 in SNAP CollegeMsg), requiring real-data findings to be treated as qualitative supporting evidence rather than population-level statistical inference."
+}

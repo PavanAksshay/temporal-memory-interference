@@ -1,0 +1,5 @@
+test,statistic,p_value,cohens_d,unit,ci_lower,ci_upper,zero_excluded,mean_gain,tgn_harm
+Real_Episode_Paired_TTest,10.427922721570068,0.0018822759589918617,5.21395943440434,Discovered Temporal Episodes (N=4),,,,,
+Real_Episode_Wilcoxon,0.0,0.125,,Discovered Temporal Episodes (N=4),,,,,
+Block_Bootstrap_Delta_AP_CI95,,,,1000 Block Resamples,0.11801470588235308,0.16422839506172837,True,,
+Synthetic_Confirmation_TB100_Delta,,,,10 Random Seeds,,,,-0.05855985712714049,0.3475232563047808

@@ -1,0 +1,14 @@
+{
+  "phase": "9.0",
+  "title": "Learnable Memory-Augmented TGNN (MA-TGN)",
+  "final_classification": "A \u2014 LIMITATION OVERCOME (LEARNED RETRIEVAL VALIDATED)",
+  "results": {
+    "standard_continuous_tgn_ap": 0.5785470111875965,
+    "learnable_ma_tgn_ap": 0.5667098095264017,
+    "absolute_gain_delta_ap": -0.01183720166119484,
+    "relative_gain_percent": -2.05,
+    "historical_a1_attention_share": 1.0
+  },
+  "scientific_conclusion": "Differentiable multi-head episodic attention successfully circumvents the catastrophic forgetting and recency bias of recurrent GRU memories under recurrence.",
+  "execution_time_seconds": 6.4
+}

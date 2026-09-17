@@ -1,0 +1,31 @@
+\section{Experimental Setup}
+\label{sec:experimental_setup}
+
+\subsection{Canonical Synthetic Recurrence Benchmark}
+We formalize the $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ setting using a continuous Dynamic Stochastic Block Model (DSBM) generator \citep{holland1983stochastic}:
+\begin{itemize}
+    \item \textbf{Graph Topology}: $N = 300$ nodes partitioned into $K = 3$ equal-sized communities.
+    \item \textbf{Regime Parameters}: Base graph density is fixed to $\rho = 0.10$. In Regime $\mathcal{A}$, community persistence is $\lambda_A = 0.35$ with partition seed $101$. In Distractor Regime $\mathcal{B}$, community persistence is $\lambda_B = 0.15$ with orthogonal partition seed $202$.
+    \item \textbf{Temporal Intervals}: Initial Regime $\mathcal{A}$ runs for $T_A = 100$ snapshots (training: $t \in [0, 70]$; validation: $t \in [71, 99]$). Distractor Regime $\mathcal{B}$ runs for $T_B \in \{25, 50, 100, 200\}$. Recurring Regime $\mathcal{A}$ runs for $50$ evaluation snapshots starting at $t = 100 + T_B$.
+    \item \textbf{Evaluation Protocol}: Link prediction is evaluated at every test snapshot $t \to t+1$ using 1:1 negative edge sampling uniformly drawn from non-connected pairs, evaluated across 10 random seeds ($42, 43, 44, 45, 46, 47, 48, 49, 50, 51$). Primary metric is Average Precision (AP).
+\end{itemize}
+
+\subsection{Real-World Dynamic Graph Datasets}
+To evaluate recurrence in real-world systems, we analyze two public temporal interaction networks:
+\begin{enumerate}
+    \item \textbf{SNAP CollegeMsg} \citep{panzarasa2009patterns}: $1,899$ users and $59,835$ private messaging timestamps across $193$ days. We identify $4$ natural multi-week recurrence episodes where communication between specific user cohorts reactivates after intervening distractor periods of $2$ to $11$ weeks.
+    \item \textbf{SNAP Bitcoin-OTC} \citep{kumar2016edge}: $5,881$ accounts and $35,592$ financial trust ratings over $5$ years. We isolate $4$ macro financial trust recurrence episodes across shifting market volatility cycles.
+\end{enumerate}
+
+\subsection{Baselines and Information Access Profiles}
+We evaluate methods across strictly defined information budgets:
+\begin{itemize}
+    \item \textbf{Historical Oracle}: Accesses the uncorrupted historical summary graph of Regime $\mathcal{A}$ directly.
+    \item \textbf{Current-Only}: Uses only local common-neighbor heuristics from snapshot $G_t$, ignoring history.
+    \item \textbf{EdgeBank} \citep{poursafaei2022towards}: Evaluated under \textit{Bounded A} (storing only edges from $t \in [0, 99]$) and \textit{All-History} (storing all observed edges up to $t$).
+    \item \textbf{Historical Retrieval Probe}: Computes topological graph similarity to retrieve matching historical snapshots from an episodic cache without neural parameters.
+    \item \textbf{Random Retrieval}: Randomly selects historical snapshots from the episodic cache as a negative control.
+    \item \textbf{Continuous TGN} \citep{rossi2020temporal}: Standard continuous temporal graph network with recurrent node memory ($d_m=64$) and temporal graph attention.
+    \item \textbf{TGN-NoMemory}: Continuous TGN with recurrent node memory disabled, relying solely on recent spatial aggregation.
+    \item \textbf{MA-TGN (Proposed)}: Memory-Augmented TGN combining continuous recurrent tracking with an addressable episodic checkpoint memory and temporal query routing.
+\end{itemize}

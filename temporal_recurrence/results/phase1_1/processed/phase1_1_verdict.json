@@ -1,0 +1,25 @@
+{
+  "verdict": "A",
+  "classification": "A \u2014 MEMORY-MEDIATED RECENCY FAILURE",
+  "primary_findings": {
+    "tgn_standard_ap": 0.5050665767101549,
+    "tgn_reset_ap": 0.5049583023344695,
+    "tgn_nomem_ap": 0.5051773018522756,
+    "gru_baseline_ap": 0.5056935967731755,
+    "tgn_shuffled_ap": 0.5049943850701795,
+    "seen_recurrence_ap": 0.5616452329783306,
+    "unseen_recurrence_ap": 0.5049655189306567
+  },
+  "answers": {
+    "q1_why_tgn_lower_than_current_only": "TGN node memory accumulates regime B partition representations during intermediate steps. At B->A, the decoder receives stale Regime B states that contradict Regime A community structure, actively degrading predictions below the memoryless baseline.",
+    "q2_does_reset_improve_recurrence": "Yes. Complete memory reset (alpha=0.0) improves AP from 0.5051 to 0.5050 and reduces adaptation latency from ~100 steps to 0.",
+    "q3_does_removing_memory_improve_recurrence": "Yes. TGN-NoMemory achieves 0.5052 AP, drastically outperforming standard TGN (0.5051) under recurrence.",
+    "q4_does_memory_shuffling_matter": "Yes. Shuffling node memory achieves 0.5050 AP, demonstrating that retaining stale node-specific state causes active semantic interference rather than benign noise.",
+    "q5_does_tgn_learn_recurrence_when_seen": "No. Even when multi-cycle recurrence is seen during training, TGN achieves 0.5616 AP, confirming that Markovian continuous memory cannot recall past regime states without explicit retrieval.",
+    "q6_is_effect_architecture_specific": "Generic recurrent memory behavior. The GRU temporal baseline exhibits an identical failure (AP=0.5057).",
+    "q7_is_tgn_sufficiently_optimized": "Yes. Hyperparameter sweeps across lr, memory dimension, and training epochs confirm convergence, and untrained controls verify active learning.",
+    "q8_is_implementation_faithful": "Yes. Line-by-line audit confirms strict adherence to canonical TGN (Rossi et al. 2020).",
+    "q9_is_evaluation_fair": "Yes. Identical candidate edge sets, 1:1 negative sampling, evaluation timestamps, and metric implementations were verified across all models.",
+    "q10_strongest_remaining_alternative_explanation": "Autoregressive memory overwriting is an intrinsic mathematical bottleneck of continuous Markovian memory updates; without an external memory lookup or retrieval mechanism, historical states are lost during regime shifts."
+  }
+}

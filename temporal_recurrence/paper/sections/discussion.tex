@@ -1,0 +1,10 @@
+\section{Discussion}
+\label{sec:discussion}
+
+Our empirical findings reveal fundamental insights into temporal memory representation:
+
+\subsection{Continuous Recurrent Compression vs. Addressable Access}
+Sequential message-passing networks inherently compress historical interaction events into a single fixed-dimensional state vector $s_u(t)$. While this compression enables sublinear inference and spatial aggregation, our parameterized $T_B$ experiments demonstrate that prolonged conflicting dynamics inevitably overwrite historical community invariants. Simply expanding recurrent dimensionality ($d_m$) does not resolve this bottleneck because the update equations remain sequentially coupled. In contrast, addressable episodic memory decouples long-range historical preservation from local message passing.
+
+\subsection{Exact Memorization vs. Structural Recurrence}
+Our decomposition between exact recurrence (Condition A) and structural recurrence (Condition B) clarifies the role of non-parametric baselines. On real-world datasets dominated by repeated pairwise interactions (e.g., CollegeMsg and Bitcoin-OTC), EdgeBank provides an exceptionally strong baseline ($0.8763$ and $0.7753$) that outperforms all neural models. However, when interaction topologies recur under permuted or unrepeated edge instances, exact memorization collapses, whereas addressable structural representations retain predictive utility. Thus, different recurrence regimes demand distinct historical access mechanisms.
