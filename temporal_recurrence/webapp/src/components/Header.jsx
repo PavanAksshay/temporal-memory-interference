@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, BookOpen } from 'lucide-react';
+import { Activity, BookOpen, Table } from 'lucide-react';
 
 export default function Header({ activeTab, setActiveTab, currentRegime, timestep, totalTimesteps, isConnected }) {
   const getRegimeBadge = () => {
@@ -136,6 +136,27 @@ export default function Header({ activeTab, setActiveTab, currentRegime, timeste
           >
             <Activity size={13} />
             Simulator &amp; Topology
+          </button>
+
+          <button
+            onClick={() => setActiveTab('tables')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '4px 10px',
+              borderRadius: 'var(--radius-xs)',
+              border: 'none',
+              background: activeTab === 'tables' ? 'var(--bg-surface-elevated)' : 'transparent',
+              color: activeTab === 'tables' ? 'var(--text-primary)' : 'var(--text-secondary)',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Table size={13} />
+            Research Tables (14)
           </button>
           
           <button

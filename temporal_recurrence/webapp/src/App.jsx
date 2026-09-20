@@ -6,6 +6,7 @@ import MetricsDashboard from './components/MetricsDashboard';
 import AttentionHeatmap from './components/AttentionHeatmap';
 import SimulationPanel from './components/SimulationPanel';
 import PhaseExplorer from './components/PhaseExplorer';
+import PaperTables from './components/PaperTables';
 import { fetchPresets, runSimulation } from './services/api';
 
 export default function App() {
@@ -190,6 +191,9 @@ export default function App() {
             </div>
 
           </div>
+        ) : activeTab === 'tables' ? (
+          /* Research Paper Tables Tab */
+          <PaperTables />
         ) : (
           /* Phase Explorer Tab */
           <PhaseExplorer />
