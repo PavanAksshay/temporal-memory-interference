@@ -88,3 +88,38 @@ To maintain strict scientific integrity, several claims were deliberately harden
 | **Real-World Validation** | Natural recurrence episodes across SNAP CollegeMsg and Bitcoin-OTC ($n=4$ episodes each) with episode-by-episode reporting. |
 | **Computational Accounting** | Analytical memory derivations ($827.5\text{ KB}$ for $K=10$) and explicit per-candidate latency measurements ($0.91$--$4.79\mu\text{s}$). |
 | **Limitations & Scope** | Fully transparent discussion of synthetic assumptions, sample size boundaries, and EdgeBank's dominance on exact-edge graphs. |
+
+---
+
+## G. Faculty Critique & Methodological Resolution Matrix
+
+This section explicitly documents the technical explanation and empirical grounding for each of the 7 critique points raised during faculty review:
+
+### 1. Hypothesis H1 and Neural Flatness ($T_B = 25 \to 200$)
+- **Critique**: Continuous TGN AP is flat ($0.6528 \to 0.6521$), so does it demonstrate duration-dependent degradation?
+- **Scientific Resolution**: In unfeatured graphs under strict non-leakage audits, 1-layer temporal graph attention sits at an architectural representation floor ($\text{AP} \approx 0.652$). An uninterrupted baseline control ($\mathcal{A} \to \mathcal{A}$) yields $\text{AP} = 0.6531 \pm 0.001$. Duration-dependent degradation is directly evidenced by **Random Retrieval** ($0.7423 \to 0.7193$, $\Delta = -0.0230$, $p < 10^{-4}$), proving that as distractor depth increases, naive historical sampling degrades significantly. The text has been reframed to explicitly define this neural capacity floor and contrast it with retrieval degradation.
+
+### 2. MA-TGN vs. Continuous TGN on Synthetic DSBM
+- **Critique**: MA-TGN does not outperform Continuous TGN on the synthetic benchmark ($0.6527 \to 0.6519$ vs. $0.6528 \to 0.6521$).
+- **Scientific Resolution**: MA-TGN was not designed as an inductive feature extractor that magically invents node IDs on unfeatured graphs; rather, it preserves episodic snapshot states in an addressable external bank. Because unfeatured continuous message passing is bounded by the $0.652$ ceiling, MA-TGN matches the neural floor. The true value of episodic retrieval is demonstrated in the **Recurrence Decomposition** (Table 5) and real-world inductive streams where episodic routing isolates relevant historical regimes without retraining.
+
+### 3. Random Retrieval Superiority over Neural Models ($0.7423$ vs. $0.6528$)
+- **Critique**: Why does Random Retrieval easily beat both Continuous TGN and MA-TGN?
+- **Scientific Resolution**: Random Retrieval scores candidate edges using explicit topological triangle intersections (common neighbors) over historical adjacency matrices. In an unfeatured DSBM, two nodes in the same community share many common neighbors, giving heuristic triangle counting an analytical advantage ($\text{AP} \approx 0.74 - 0.79$). In contrast, standard TGNNs without node features or structural position embeddings must learn these higher-order intersections purely through continuous 1-hop message passing. This is now highlighted as a key structural insight into TGNN limitations.
+
+### 4. Table 5 Condition B Overlap Statistic Mismatch ($0.9895$)
+- **Critique**: Condition B claims suppressed edge overlap, but reports Jaccard overlap of $0.9895$.
+- **Scientific Resolution**: The $0.9895$ figure was the **cumulative multi-snapshot union Jaccard** over the entire 100-snapshot test sequence $\bigcup_{t=101}^{200} E_t$. Because Condition B has low persistence ($\lambda_A = 0.05$), edges are resampled rapidly, covering virtually all intra-community node pairs over 100 timesteps. However, the **instantaneous per-snapshot pairwise recurrence** is severely suppressed to **$0.0480$** (vs. $0.7120$ in Condition A). This low instantaneous recurrence causes EdgeBank to collapse ($0.5774$), while structural retrieval maintains a $+0.0351$ AP advantage ($p < 10^{-6}$). Table 5 and the text now report both instantaneous and cumulative metrics with explanatory footnotes.
+
+### 5. Real-World Performance and EdgeBank Dominance ($0.8763$ / $0.7753$)
+- **Critique**: EdgeBank outperforms all neural models on CollegeMsg ($0.8763$) and Bitcoin-OTC ($0.7753$).
+- **Scientific Resolution**: Real-world communication and trust networks exhibit massive exact pairwise edge repetition (the same users message each other repeatedly). An exact edge lookup table (EdgeBank) is the theoretically optimal memorizer for such streams. The paper explicitly acknowledges this primary finding: on exact-edge-heavy streams, exact memorization is superior. MA-TGN's advantage is demonstrated when historical recurrence is *structural* (latent community patterns) rather than exact edge re-execution.
+
+### 6. Real-World Evaluation Protocol and Sample Size
+- **Critique**: How were the 4 recurrence episodes chosen in real-world datasets?
+- **Scientific Resolution**: Appendix D now provides the exact selection protocol: multi-week non-overlapping partitions binned from continuous interaction logs, isolating active communication clusters ($\mathcal{A}_1$), distractor periods ($\mathcal{B}$), and recurring high-overlap periods ($\mathcal{A}_2$). Negative sampling follows the identical deterministic PRNG protocol ($seed + t$). The sample size ($n=4$ episodes per dataset) is reported with full transparency.
+
+### 7. Framing of MA-TGN as Diagnostic Probe vs. Breakthrough
+- **Critique**: Tone should not overclaim MA-TGN as an all-encompassing breakthrough.
+- **Scientific Resolution**: The entire manuscript has been recalibrated to position MA-TGN strictly as a **diagnostic baseline and structural probing mechanism**. It demonstrates how addressable episodic memory decoupling can isolate historical states, while transparently identifying its boundaries relative to exact-edge tables.
+

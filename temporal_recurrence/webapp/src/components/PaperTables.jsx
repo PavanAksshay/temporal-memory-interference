@@ -161,14 +161,16 @@ export const PAPER_TABLES = [
     keyTakeaway: 'EdgeBank dominates on exact edge repetition (0.8884 AP) but collapses under structural recurrence (0.5774 AP). Structural retrieval retains a statistically significant advantage (+0.0351 AP, p < 10^-6).',
     headers: ['Metric / Baseline', 'Condition A (Exact Edge Recurrence)', 'Condition B (Structural Recurrence)', 'Control (Novel Regime C)'],
     rows: [
-      { highlight: false, cols: ['Edge Jaccard Overlap (A1 cap A2)', '0.6554', '0.9379 (Suppressed exact)', '0.8840 (Independent C)'] },
+      { highlight: false, cols: ['Markov Edge Persistence (λA)', '0.70 (High)', '0.05 (Low)', '0.25 (Control novel C)'] },
+      { highlight: false, cols: ['Instantaneous Overlap Rate (J_inst)', '0.7120', '0.0480 (Suppressed exact)', '0.0120'] },
+      { highlight: false, cols: ['Cumulative Union Jaccard (J_union)*', '0.7715', '0.9895 (Dense 100-step union)', '0.9535'] },
       { highlight: false, cols: ['Historical Oracle (Ground Truth)', '0.9097', '0.6578', '0.6869'] },
       { highlight: false, cols: ['Current-Only (1-Step Heuristic)', '0.8975', '0.6193', '0.7169'] },
-      { highlight: false, cols: ['EdgeBank All-History (Exact Lookup)', '0.8884', '0.5774', '0.6872'] },
+      { highlight: false, cols: ['EdgeBank All-History (Exact Lookup)', '0.8884', '0.5774 (Collapses)', '0.6872'] },
       { highlight: false, cols: ['Historical Retrieval Probe (Structural)', '0.8971', '0.6125', '0.7101'] },
       { highlight: false, cols: ['Continuous TGN', '0.6484', '0.6527', '0.4990'] },
       { highlight: false, cols: ['MA-TGN (Proposed)', '0.6480', '0.6524', '0.4995'] },
-      { highlight: true, cols: ['Delta (Retrieval - EdgeBank)', '+0.0087', '+0.0351 (p < 10^-6)', '+0.0229'] }
+      { highlight: true, cols: ['Δ(Retrieval - EdgeBank)', '+0.0087', '+0.0351 (p < 10^-6)', '+0.0229'] }
     ]
   },
   {

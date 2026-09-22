@@ -4,11 +4,13 @@
 \section{Extended Experimental Setup and Hyperparameter Protocol}
 \label{app:hyperparameters}
 
-To ensure complete reproducibility across all comparative experiments, Table~\ref{tab:app_hyperparameters} provides the exact configuration parameters used for the synthetic DSBM recurrence benchmarks and neural model architectures.
+To ensure complete reproducibility, Table~\ref{tab:app_hyperparameters} provides the exact configuration parameters for the synthetic DSBM benchmarks and neural architectures.
 
 \begin{table}[!htbp]
 \centering
-\footnotesize
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{0.95}
 \caption{\textbf{Comprehensive Hyperparameter and Benchmark Configuration.}}
 \label{tab:app_hyperparameters}
 \resizebox{\columnwidth}{!}{%
@@ -16,27 +18,16 @@ To ensure complete reproducibility across all comparative experiments, Table~\re
 \toprule
 \textbf{Hyperparameter / Setting} & \textbf{Canonical Experimental Value} \\
 \midrule
-Total Nodes ($N$) & $300$ \\
-Number of Communities ($K_{\text{comm}}$) & $3$ (Equal size: 100 nodes each) \\
-Base Graph Edge Density ($\rho$) & $0.10$ \\
-Regime $\mathcal{A}$ Persistence ($\lambda_A$) & $0.35$ (Partition Seed 101) \\
-Regime $\mathcal{B}$ Persistence ($\lambda_B$) & $0.15$ (Partition Seed 202) \\
-Regime $\mathcal{C}$ Persistence ($\lambda_C$) & $0.25$ (Partition Seed 303) \\
+Total Nodes ($N$) & $300$ ($K_{\text{comm}} = 3$ equal communities of 100) \\
+Base Graph Edge Density ($\rho$) & $0.10$ (Strictly matched across all regimes) \\
+Regime $\mathcal{A}, \mathcal{B}, \mathcal{C}$ Persistence ($\lambda$) & $\lambda_A = 0.35$, $\lambda_B = 0.15$, $\lambda_C = 0.25$ \\
 Distractor Durations Evaluated ($T_B$) & $\{25, 50, 100, 200\}$ snapshots \\
-Training Interval & $t \in [0, 70]$ (Initial Regime $\mathcal{A}$) \\
-Validation Interval & $t \in [71, 99]$ (Initial Regime $\mathcal{A}$) \\
-Evaluation Test Interval & $t \in [100+T_B, 149+T_B]$ (Recurring $\mathcal{A}$) \\
-Independent Random Seeds & $42, 43, 44, 45, 46, 47, 48, 49, 50, 51$ ($n=10$) \\
-Negative Edge Sampling Ratio & $1:1$ (Uniformly drawn non-connected pairs) \\
-Optimization Algorithm & Adam ($\beta_1=0.9, \beta_2=0.999$) \\
-Learning Rate & $0.005$ \\
-Weight Decay ($\ell_2$ penalty) & $10^{-4}$ \\
-Training Epochs & $10$ epochs \\
-Node Recurrent Memory Dimension ($d_m$) & $64$ (Default; swept across $\{16, 32, 64, 128, 256\}$) \\
-Episodic Memory Key Dimension ($d_k$) & $64$ \\
-Time Embedding Dimension ($d_t$) & $64$ \\
+Training / Validation / Test Intervals & $t \in [0, 70]$ / $[71, 99]$ / $[100+T_B, 149+T_B]$ \\
+Random Seeds \& Negative Edge Ratio & $n=10$ seeds ($42$--$51$); $1:1$ uniform non-edges \\
+Optimizer / LR / Weight Decay / Epochs & Adam ($\beta=(0.9, 0.999)$) / $0.005$ / $10^{-4}$ / $10$ epochs \\
+Node Recurrent Memory Dim ($d_m$) & $64$ (Swept across $\{16, 32, 64, 128, 256\}$) \\
+Episodic Memory Bank ($d_k, d_t, K$) & $d_k = 64, d_t = 64, K = 10$ (Swept $\{1$--$32\}$) \\
 Episodic Checkpoint Interval & Every $10$ snapshots \\
-Maximum Episodic Bank Capacity ($K$) & $10$ checkpoints (Default; swept $\{1, 2, 4, 8, 16, 32\}$) \\
 \bottomrule
 \end{tabular}%
 }
@@ -45,11 +36,13 @@ Maximum Episodic Bank Capacity ($K$) & $10$ checkpoints (Default; swept $\{1, 2,
 \section{Eight-Point Temporal Non-Anticipation and Leakage Audit}
 \label{app:leakage}
 
-Temporal link prediction benchmarks can easily suffer from subtle temporal leakage. To guarantee absolute causality and fair comparison, all models were evaluated under the strict eight-point non-anticipation protocol summarized in Table~\ref{tab:app_leakage}.
+All models were evaluated under the strict eight-point non-anticipation protocol summarized in Table~\ref{tab:app_leakage}.
 
 \begin{table}[!htbp]
 \centering
-\footnotesize
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{0.95}
 \caption{\textbf{Eight-Point Temporal Non-Anticipation and Causality Verification.}}
 \label{tab:app_leakage}
 \resizebox{\columnwidth}{!}{%
@@ -73,32 +66,25 @@ Temporal link prediction benchmarks can easily suffer from subtle temporal leaka
 \section{Analytical Memory Footprint and Parameter Accounting}
 \label{app:memory_accounting}
 
-For a graph of $N$ nodes, node memory dimension $d_m$, episodic key dimension $d_k$, and $K$ stored episodic checkpoints under standard single-precision 32-bit floating point arithmetic ($4$ bytes per float), the memory footprint is derived analytically as:
+For $N$ nodes, memory dim $d_m$, key dim $d_k$, and $K$ stored checkpoints (single-precision float32, $4$ bytes), RAM footprint is:
 \begin{equation}
     M_{\text{RAM}} = \frac{4 (N d_m + K d_k + K N d_m)}{1024} \text{ KB}.
 \end{equation}
-For our canonical synthetic configuration ($N = 300$, $d_m = 64$, $d_k = 64$, $K = 10$ checkpoints):
-\begin{equation}
-    M_{\text{RAM}} = \frac{4 (19,200 + 640 + 192,000)}{1024} = \mathbf{827.5\text{ KB}}.
-\end{equation}
-For a larger network of $N = 10,000$ nodes with $K = 20$ checkpoints ($d_m = 64, d_k = 64$):
-\begin{equation}
-    M_{\text{RAM}} = \frac{4 (640,000 + 1,280 + 12,800,000)}{1024} \approx 52.5\text{ MB},
-\end{equation}
-confirming that addressable episodic state caching requires modest memory budgets well within modern GPU/host RAM limits.
+For $N = 300, d_m = 64, d_k = 64, K = 10$, $M_{\text{RAM}} = \mathbf{827.5\text{ KB}}$. For $N = 10,000, K = 20$, $M_{\text{RAM}} \approx 52.5\text{ MB}$, confirming modest memory requirements.
 
 \section{Real-World Recurrence Episode Specifications}
 \label{app:real_world}
 
-We identify natural multi-week recurrence episodes in two standard SNAP continuous-time interaction networks:
-\begin{enumerate}
+Natural recurrence episodes in SNAP continuous-time datasets:
+\begin{itemize}
     \setlength{\itemsep}{0pt}
-    \item \textbf{SNAP CollegeMsg} ($1,899$ nodes, $59,835$ interactions): \textbf{Ep 1}: W11 $\to$ W12 $\to$ W13; \textbf{Ep 2}: W8 $\to$ W9--18 $\to$ W19; \textbf{Ep 3}: W11 $\to$ W12--13 $\to$ W14; \textbf{Ep 4}: W10 $\to$ W11--12 $\to$ W13.
-    \item \textbf{SNAP Bitcoin-OTC} ($5,881$ accounts, $35,592$ trust ratings): Four multi-month partitions isolating high-volume trader trust clusters reactivating after dormant market intervals.
-\end{enumerate}
+    \item \textbf{SNAP CollegeMsg} ($1,899$ nodes, $59,835$ interactions): Weekly binned non-overlapping windows. \textbf{Ep 1}: W11 ($\mathcal{A}_1$) $\to$ W12 ($\mathcal{B}$) $\to$ W13 ($\mathcal{A}_2$); \textbf{Ep 2}: W8 $\to$ W9--18 (10-wk distractor) $\to$ W19; \textbf{Ep 3}: W11 $\to$ W12--13 $\to$ W14; \textbf{Ep 4}: W10 $\to$ W11--12 $\to$ W13.
+    \item \textbf{SNAP Bitcoin-OTC} ($5,881$ accounts, $35,592$ ratings): Four multi-month partitions isolating cohesive merchant trust clusters active in initial cycles ($\mathcal{A}_1$), dormant during consolidation ($\mathcal{B}$), and reactivating in subsequent market cycles ($\mathcal{A}_2$).
+\end{itemize}
+Negative pairs were sampled uniformly at random per timestep using deterministic PRNG offsets ($seed + t$).
 
 \section{Early Benchmark Prototypes and Failure Modes}
 \label{app:benchmark_history}
 
-For scientific transparency, we briefly note why naive recurrence benchmarks were rejected during early pilot studies. Initial prototypes used unconstrained dynamic Erd\H{o}s-R\'enyi models where density shifted drastically between regimes ($\rho_A = 0.20 \to \rho_B = 0.05$). In such settings, models could exploit trivial marginal density changes as regime indicators without capturing underlying community topology. The canonical benchmark adopted in this work strictly enforces identical marginal densities ($\rho = 0.10$) across all regimes, isolating structural community invariants from trivial scalar statistical artifacts.
+Early prototypes with unconstrained Erd\H{o}s-R\'enyi models where density shifted ($\rho_A = 0.20 \to \rho_B = 0.05$) allowed models to exploit marginal density shifts rather than community topology. The canonical benchmark strictly enforces identical density ($\rho = 0.10$) across all regimes.
 

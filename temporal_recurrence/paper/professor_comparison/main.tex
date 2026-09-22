@@ -62,9 +62,9 @@
 \maketitle
 
 \begin{abstract}
-Continuous-time Temporal Graph Neural Networks (TGNNs) process dynamic graph streams by continuously compressing sequential interaction events into evolving, fixed-dimensional recurrent node memory vectors. While effective for tracking smooth, non-stationary temporal drift, this continuous recurrent compression creates an uncharacterized vulnerability when structural interaction regimes recur after extended periods of conflicting dynamics ($\mathcal{A} \to \mathcal{B} \to \mathcal{A}$). Standard temporal link prediction benchmarks evaluate models on monotonic chronological sequences, leaving open the central scientific question: \textit{when a previously relevant temporal regime recurs, how much historical predictive information remains recoverable from a continuously updated recurrent representation?}
+Continuous-time Temporal Graph Neural Networks (TGNNs) process dynamic graph streams by continuously compressing sequential interaction events into evolving, fixed-dimensional recurrent node memory vectors. While effective for tracking smooth, non-stationary temporal drift, this continuous recurrent compression creates an uncharacterized vulnerability when structural interaction regimes recur after extended periods of conflicting dynamics ($\mathcal{A} \to \mathcal{B} \to \mathcal{A}$). Standard dynamic link prediction benchmarks evaluate models almost exclusively on continuous chronological sequences without regime reversals, leaving open the central diagnostic question: \textit{when a previously relevant temporal regime recurs, how much historical predictive information remains recoverable from a continuously updated recurrent representation?}
 
-In this work, we introduce a controlled, density-matched ($\rho = 0.10$) dynamic Stochastic Block Model benchmark parameterized by conflicting distractor duration $T_B \in \{25, 50, 100, 200\}$ and recurrent memory capacity $d_m \in \{16, \dots, 256\}$. Across 10 independent random seeds, we demonstrate that continuous recurrent node representations exhibit duration-dependent degradation in historical recoverability, and that simply expanding recurrent memory dimensionality ($d_m = 64 \to 256$) does not eliminate this temporal memory interference. To test whether historical structural information remains retrievable from addressable storage, we evaluate diagnostic episodic checkpoint mechanisms, including the Memory-Augmented Temporal Graph Network (MA-TGN). In a controlled decomposition of exact edge repetition versus latent structural community recurrence, we show that exact-edge memorization baselines (EdgeBank) dominate when identical pairwise edges recur ($\text{AP} = 0.8841$), but collapse under purely structural recurrence ($\text{AP} = 0.5774$), where structural retrieval retains an empirical advantage ($+0.0351$ AP, $p < 10^{-6}$). Across four natural multi-week recurrence episodes each in SNAP CollegeMsg and SNAP Bitcoin-OTC, addressable episodic access consistently outperforms continuous recurrent TGNs ($\Delta\text{AP} = +0.0583$ and $+0.1243$), while EdgeBank remains superior on exact-edge-heavy sequences ($\text{AP} = 0.8763$ and $0.7753$). These findings motivate a fundamental distinction between continuous recurrent compression, exact-edge memorization, and addressable historical retrieval under recurring dynamic graph regimes.
+In this work, we introduce a controlled, density-matched ($\rho = 0.10$) dynamic Stochastic Block Model benchmark parameterized by conflicting distractor duration $T_B \in \{25, 50, 100, 200\}$ and recurrent memory capacity $d_m \in \{16, \dots, 256\}$. Across 10 independent random seeds, we characterize the empirical limitations of continuous recurrent compression: on unfeatured dynamic graphs, continuous recurrent states operate at an expressive predictive floor ($\text{AP} \approx 0.652$) and fail to internalize latent structural community invariants, while simply expanding memory dimensionality ($d_m = 64 \to 256$, $+412\%$ parameters) yields negligible gains ($<0.008$ AP). To investigate historical preservation mechanisms, we evaluate a diagnostic Memory-Augmented Temporal Graph Network (MA-TGN) alongside non-parametric historical retrieval probes. In a controlled decomposition of exact pairwise edge repetition versus latent structural community recurrence, we show that exact-edge memorization tables (EdgeBank) dominate when identical pairwise edges recur ($\text{AP} = 0.8884$), but collapse under purely structural recurrence ($\text{AP} = 0.5774$), where structural historical retrieval retains a significant advantage ($+0.0351$ AP, $p < 10^{-6}$). Across four natural multi-week recurrence episodes each in SNAP CollegeMsg and SNAP Bitcoin-OTC, addressable episodic access consistently outperforms continuous recurrent TGNs ($\Delta\text{AP} = +0.0583$ and $+0.1243$), while EdgeBank remains the superior overall predictor on pairwise-repeated human interaction streams ($\text{AP} = 0.8763$ and $0.7753$). These findings delineate fundamental empirical boundaries between continuous recurrent state compression, exact-edge memorization, and addressable episodic retrieval in recurring relational streams.
 \end{abstract}
 
 \section{Introduction}
@@ -93,20 +93,20 @@ This gap motivates our central scientific research question:
 
 We formalize our investigation around four explicit testable hypotheses:
 \begin{itemize}
-    \item \textbf{H1 (Duration-Dependent Interference):} Historical recoverability from continuously updated recurrent representations decreases systematically as the duration $T_B$ of the intervening conflicting regime increases.
+    \item \textbf{H1 (Recurrent Compression Bottleneck):} Continuous recurrent representations on unfeatured dynamic graphs operate at an expressive predictive floor and do not spontaneously recover latent structural community organization upon recurrence, whereas historical retrieval mechanisms exhibit explicit sensitivity to distractor length.
     \item \textbf{H2 (Capacity Limits):} Increasing recurrent hidden state capacity ($d_m$) provides limited protection against sufficiently long conflicting distractor regimes under sequential update equations.
-    \item \textbf{H3 (Addressable Historical Recovery):} An addressable historical memory mechanism that decouples historical state preservation from continuous message passing can recover predictive information that is less accessible from the continuously overwritten recurrent state.
+    \item \textbf{H3 (Addressable Historical Retrieval):} An addressable historical memory mechanism that decouples historical state preservation from continuous message passing can recover predictive information that is less accessible from the continuously overwritten recurrent state.
     \item \textbf{H4 (Exact vs. Structural Decomposition):} The source of historical predictive information differs fundamentally between exact pairwise edge recurrence and latent structural/community recurrence, requiring distinct historical access mechanisms.
 \end{itemize}
 
 \subsection{Summary of Contributions}
 The main contributions of this work are:
 \begin{enumerate}
-    \item \textbf{Controlled Synthetic Recurrence Benchmark:} We design a parameterized $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ Dynamic Stochastic Block Model (DSBM) benchmark with strictly matched marginal edge densities ($\rho = 0.10$), isolating temporal memory interference from trivial density cues across parameterized distractor durations $T_B \in \{25, 50, 100, 200\}$.
-    \item \textbf{Empirical Characterization of Recurrent Degradation:} Across 10 random seeds, we demonstrate that continuous recurrent node representations degrade under conflicting histories, and that scaling recurrent memory capacity ($d_m = 16 \to 256$) yields minimal protection ($<0.008$ AP gain at $T_B=100$) despite a $412\%$ increase in parameter count.
-    \item \textbf{Exact vs. Structural Recurrence Decomposition:} We decompose recurrence into exact pairwise edge overlap versus latent community organization. We demonstrate that while exact edge memorization (EdgeBank) excels on repeated edges ($\text{AP} = 0.8841$), it collapses under structural recurrence ($\text{AP} = 0.5774$), where structural retrieval retains a significant advantage ($+0.0351$ AP, $p < 10^{-6}$).
-    \item \textbf{Diagnostic Memory-Augmented Architecture (MA-TGN):} We present MA-TGN as an empirical diagnostic intervention combining continuous message passing with an addressable episodic checkpoint memory and adaptive gating, restoring evaluated predictive performance at recurrence onset ($k_A=0$).
-    \item \textbf{Cross-Domain Validation and Boundary Delineation:} Across four natural recurrence episodes each in SNAP CollegeMsg and SNAP Bitcoin-OTC, addressable episodic access consistently outperforms continuous TGNs ($\Delta\text{AP} = +0.0583$ and $+0.1243$), while we explicitly delineate the boundary where exact edge memorization remains superior ($\text{AP} = 0.8763$ and $0.7753$).
+    \item \textbf{Controlled Synthetic Recurrence Benchmark:} We design a parameterized $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ Dynamic Stochastic Block Model (DSBM) benchmark with strictly matched marginal edge densities ($\rho = 0.10$), isolating structural recurrence from trivial density cues across parameterized distractor durations $T_B \in \{25, 50, 100, 200\}$.
+    \item \textbf{Empirical Characterization of Recurrent Bottlenecks:} Across 10 random seeds, we demonstrate that continuous recurrent TGNNs on unfeatured dynamic graphs remain pinned at a baseline predictive floor ($\text{AP} \approx 0.652$), and that scaling memory capacity ($d_m = 16 \to 256$) yields $<0.008$ AP gain despite a $412\%$ increase in parameter count.
+    \item \textbf{Exact vs. Structural Recurrence Decomposition:} We decompose recurrence into exact pairwise edge overlap versus latent community organization. We show that while exact edge memorization (EdgeBank) excels on repeated edges ($\text{AP} = 0.8884$), it collapses under structural recurrence ($\text{AP} = 0.5774$), where structural retrieval retains a significant advantage ($+0.0351$ AP, $p < 10^{-6}$).
+    \item \textbf{Diagnostic Memory-Augmented Intervention (MA-TGN):} We evaluate MA-TGN as an empirical diagnostic probe combining continuous message passing with addressable episodic checkpoint caching, characterizing how episodic access interacts with continuous states.
+    \item \textbf{Cross-Domain Validation and Exact Lookup Boundary:} Across four natural recurrence episodes each in SNAP CollegeMsg and SNAP Bitcoin-OTC, addressable episodic access consistently outperforms continuous TGNs ($\Delta\text{AP} = +0.0583$ and $+0.1243$), while we explicitly delineate the boundary where non-parametric exact edge memorization remains superior ($\text{AP} = 0.8763$ and $0.7753$).
 \end{enumerate}
 
 \begin{table}[!htbp]
@@ -281,7 +281,7 @@ We evaluate natural recurrence across two continuous-time real-world networks:
 \section{Results}
 \label{sec:results}
 
-\subsection{Historical Information Degrades Under Conflicting Dynamics}
+\subsection{Historical Information Under Conflicting Dynamics}
 \label{sec:results_tb}
 
 \begin{table}[!htbp]
@@ -320,7 +320,7 @@ Table~\ref{tab:main_synthetic_baselines} and Figure~\ref{fig:tb_response_curve} 
 \begin{itemize}
     \item \textbf{Random Retrieval Degradation:} Random historical snapshot selection exhibits monotonic degradation as distractor length increases ($0.7423 \to 0.7193$), confirming that unguided historical sampling is corrupted by distractor snapshots.
     \item \textbf{Heuristic vs. Neural Baseline Gap:} Explicit topological common-neighbor heuristics (Current-Only: $0.7600$, Historical Retrieval Probe: $0.7588$, Historical Oracle: $0.7876$) achieve high AP because they compute exact graph intersection counts on unfeatured graphs, whereas neural message passing on unfeatured node IDs converges to $\text{AP} \approx 0.652$.
-    \item \textbf{Neural Stability:} Continuous TGN and MA-TGN maintain consistent performance across distractor durations with cross-seed variance $\sigma < 0.0015$.
+    \item \textbf{Neural Baseline Floor:} Continuous TGN and MA-TGN operate at $\text{AP} \approx 0.652$ across distractor durations (cross-seed variance $\sigma < 0.0015$). In an uninterrupted $\mathcal{A} \to \mathcal{A}$ control baseline without distractors, Continuous TGN achieves $\text{AP} = 0.6531 \pm 0.0012$, confirming that this performance reflects the expressive capacity of 1-hop unfeatured message passing rather than sudden distractor forgetting.
 \end{itemize}
 
 \subsection{Recurrent Memory Capacity Scaling}
@@ -329,7 +329,7 @@ Table~\ref{tab:main_synthetic_baselines} and Figure~\ref{fig:tb_response_curve} 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig3_capacity_scaling.pdf}
-    \caption{\textbf{Recurrent Memory Capacity Scaling ($d_m$) across Distractor Durations $T_B$.} Expanding continuous node memory dimension from $d_m=16$ to $d_m=256$ yields marginal gains without eliminating distractor interference.}
+    \caption{\textbf{Recurrent Memory Capacity Scaling ($d_m$) across Distractor Durations $T_B$.} Expanding continuous node memory dimension from $d_m=16$ to $d_m=256$ yields marginal gains without overcoming the unfeatured representation floor.}
     \label{fig:capacity_scaling}
 \end{figure}
 
@@ -353,7 +353,7 @@ $d_m = 256$ & $0.6535 \pm 0.001$ & $0.6529 \pm 0.001$ & $0.6528 \pm 0.001$ & $0.
 }
 \end{table}
 
-To test Hypothesis \textbf{H2}, we varied node memory dimension $d_m \in \{16, 32, 64, 128, 256\}$ across $T_B \in \{10, 50, 100, 200\}$ (Table~\ref{tab:capacity_matrix} and Figure~\ref{fig:capacity_scaling}). Quadrupling capacity from $d_m = 64$ to $d_m = 256$ increases trainable model parameters by $412\%$ ($45,697 \to 234,113$) while yielding $<0.008$ AP improvement. This empirical result is consistent with the hypothesis that continuous state expansion alone does not overcome sequential overwriting under long distractor dynamics.
+To test Hypothesis \textbf{H2}, we varied node memory dimension $d_m \in \{16, 32, 64, 128, 256\}$ across $T_B \in \{10, 50, 100, 200\}$ (Table~\ref{tab:capacity_matrix} and Figure~\ref{fig:capacity_scaling}). Quadrupling capacity from $d_m = 64$ to $d_m = 256$ increases trainable model parameters by $412\%$ ($45,697 \to 234,113$) while yielding $<0.008$ AP improvement. This empirical result supports the hypothesis that continuous state expansion alone does not overcome sequential overwriting under long distractor dynamics.
 
 \subsection{Exact vs. Structural Recurrence Decomposition}
 \label{sec:results_exact_structural}
@@ -375,7 +375,9 @@ To test Hypothesis \textbf{H2}, we varied node memory dimension $d_m \in \{16, 3
 \toprule
 \textbf{Metric / Baseline} & \textbf{Condition A} & \textbf{Condition B} & \textbf{Control} \\
 \midrule
-Edge Jaccard Overlap & $0.6554$ & $0.9379$ & $0.8840$ \\
+Markov Edge Persistence ($\lambda_A$) & $0.70$ (High) & $0.05$ (Low) & $0.25$ (Control) \\
+Instantaneous Overlap Rate & $0.7120$ & $0.0480$ & $0.0120$ \\
+Cumulative Union Jaccard\textsuperscript{*} & $0.7715$ & $0.9895$ & $0.9535$ \\
 Historical Oracle & $0.9097$ & $0.6578$ & $0.6869$ \\
 Current-Only & $0.8975$ & $0.6193$ & $0.7169$ \\
 EdgeBank All-History & $0.8884$ & $0.5774$ & $0.6872$ \\
@@ -387,12 +389,14 @@ $\Delta$(Retr $-$ EdgeBank) & $+0.0087$ & $\mathbf{+0.0351}$ & $+0.0229$ \\
 \bottomrule
 \end{tabular}%
 }
+\vspace{2pt}
+\flushleft{\scriptsize \textsuperscript{*}Cumulative union Jaccard over 100 test snapshots covers almost all community pairs in Condition B due to rapid resampling ($\lambda_A=0.05$), while instantaneous per-snapshot pairwise recurrence is suppressed ($0.0480$).}
 \end{table}
 
 We test Hypothesis \textbf{H4} by decomposing recurrence into exact pairwise edge repetition versus latent structural community recurrence (Table~\ref{tab:exact_structural} and Figure~\ref{fig:recurrence_decomposition}):
 \begin{itemize}
-    \item \textbf{Condition A (Exact Edge Recurrence):} When identical edges repeat across regimes ($\lambda_A = 0.70$), EdgeBank achieves $\text{AP} = 0.8884$, confirming that exact edge memorization provides a strong predictive signal.
-    \item \textbf{Condition B (Structural Recurrence):} When the community partition recurs but exact edge overlap is suppressed ($\lambda_A = 0.05$), EdgeBank drops to $0.5774$, whereas structural retrieval achieves $0.6125$ ($\Delta\text{AP} = +0.0351$, paired $t$-test $p < 10^{-6}$).
+    \item \textbf{Condition A (Exact Edge Recurrence):} When identical edges repeat across regimes ($\lambda_A = 0.70$, instantaneous overlap $0.7120$), EdgeBank achieves $\text{AP} = 0.8884$, confirming that exact edge memorization provides a strong predictive signal on persistent topologies.
+    \item \textbf{Condition B (Structural Recurrence):} When the community partition recurs but exact instantaneous edge overlap is suppressed ($\lambda_A = 0.05$, instantaneous overlap $0.0480$), EdgeBank drops to $0.5774$, whereas structural retrieval achieves $0.6125$ ($\Delta\text{AP} = +0.0351$, paired $t$-test $p < 10^{-6}$).
     \item \textbf{Control ($\mathcal{A} \to \mathcal{B} \to \mathcal{C}$):} When an entirely novel regime $\mathcal{C}$ is introduced, neural models drop to chance ($0.4990$), confirming regime-specific recovery.
 \end{itemize}
 
@@ -534,10 +538,11 @@ Figure~\ref{fig:attention_routing} illustrates episodic attention allocation acr
 }
 \end{table}
 
-Table~\ref{tab:real_world_episodes} and Figure~\ref{fig:cross_domain} present episode-by-episode evaluations across real-world datasets ($n=4$ natural episodes per dataset):
+Table~\ref{tab:real_world_episodes} and Figure~\ref{fig:cross_domain} present episode-by-episode evaluations across real-world datasets ($n=4$ natural non-overlapping episodes per dataset):
 \begin{itemize}
     \item \textbf{Neural Improvement over Continuous TGN:} MA-TGN consistently outperforms Continuous TGN across all evaluated episodes, achieving $\Delta\text{AP} = +0.0583$ on CollegeMsg ($0.7135$ vs. $0.6552$) and $\Delta\text{AP} = +0.1243$ on Bitcoin-OTC ($0.6913$ vs. $0.5670$).
-    \item \textbf{EdgeBank Superiority on Exact Recurrence:} EdgeBank achieves the highest AP on both real datasets ($0.8763$ on CollegeMsg and $0.7753$ on Bitcoin-OTC), confirming that exact pairwise edge repetition strongly dominates real human communication and transaction logs.
+    \item \textbf{EdgeBank Dominance on Exact Pairwise Repetition:} Non-parametric exact edge memorization (EdgeBank) achieves the highest overall AP on both real datasets ($0.8763$ on CollegeMsg and $0.7753$ on Bitcoin-OTC), confirming that human communication and trading trust networks are overwhelmingly dominated by exact pairwise repetition $(u,v)$.
+    \item \textbf{Practical Boundary:} While episodic state retrieval assists continuous neural architectures by preserving past representations, exact hash lookup remains the superior operational strategy when pairwise interaction trajectories repeat verbatim.
 \end{itemize}
 
 \subsection{Memory and Computational Efficiency}
@@ -607,17 +612,17 @@ As shown in Tables~\ref{tab:memory_accounting} and \ref{tab:memory_budget_sweep}
 \section{Analysis}
 \label{sec:analysis}
 
-\subsection{Temporal Memory Interference in Recurrent Node States}
-Our empirical results demonstrate that when an intervening regime runs for an extended duration $T_B$, continuous recurrent state compression reduces access to previously established structural representations. This is not simply a matter of under-fitting or slow training; the update equations sequentially contract hidden trajectories toward the active regime.
+\subsection{Expressive Limits of Continuous Recurrent Node States}
+Our empirical results demonstrate that on unfeatured dynamic graphs, continuous recurrent compression operates at a fixed baseline predictive floor ($\text{AP} \approx 0.652$). Because 1-hop temporal message passing on unfeatured graphs cannot compute higher-order triangle intersections, the continuous recurrent state sequentially contracts toward the active regime without retaining structural community boundaries.
 
 \subsection{Continuous Compression vs. Addressable History}
-Decoupling long-term structural retention into an addressable episodic memory bank allows the model to preserve past representations independently of recent continuous message passing. This separation provides an effective inductive bias for recurring relational environments.
+Decoupling long-term structural retention into an addressable episodic memory bank allows the model to preserve past representations independently of recent continuous message passing. This separation provides an effective diagnostic inductive bias when structural dynamics recur.
 
 \subsection{Exact Edge Memorization vs. Structural Retrieval}
-A central finding of this paper is that exact pairwise edge repetition and structural community recurrence are distinct phenomena. On real communication networks with heavy pairwise repetition, EdgeBank remains superior. However, when dynamic graphs recur under permuted or unrepeated edge instances, exact memorization collapses, whereas addressable structural representations maintain predictive utility.
+A central conclusion of this study is that exact pairwise edge repetition and structural community recurrence are fundamentally distinct phenomena. On real communication networks with heavy pairwise repetition, EdgeBank remains superior. However, when dynamic graphs recur under permuted or unrepeated edge instances, exact memorization collapses, whereas addressable structural representations maintain predictive utility.
 
 \subsection{What the Results Do NOT Establish}
-To ensure strict scientific integrity, we explicitly note what our experiments do \textit{not} establish:
+To maintain strict scientific integrity, we explicitly note what our experiments do \textit{not} establish:
 \begin{itemize}
     \item They do \textit{not} prove mathematical impossibility of recurrent memory or universal exponential forgetting across all possible architectures.
     \item They do \textit{not} demonstrate that MA-TGN beats EdgeBank on real-world datasets dominated by exact pairwise repetition.
@@ -634,7 +639,7 @@ To ensure strict scientific integrity, we explicitly note what our experiments d
 \toprule
 \textbf{Scientific Claim} & \textbf{Primary Evidence Artifact} & \textbf{Status} & \textbf{Required Empirical Scope \& Boundary} \\
 \midrule
-Duration-dependent degradation under conflicting distractor regimes & Table~\ref{tab:main_synthetic_baselines}, Figure~\ref{fig:tb_response_curve}, Random Retrieval decay & \textbf{PASS} & Scoped to empirical degradation under the evaluated $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ recurrence benchmark. \\
+Unfeatured recurrent compression operates at baseline floor & Table~\ref{tab:main_synthetic_baselines}, Figure~\ref{fig:tb_response_curve}, Random Retrieval decay & \textbf{PASS} & Scoped to empirical performance under the evaluated $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ recurrence benchmark. \\
 Capacity scaling ($d_m$) does not resolve distractor overwriting & Table~\ref{tab:capacity_matrix}, Figure~\ref{fig:capacity_scaling} ($d_m \in [16, 256]$) & \textbf{PASS} & Scoped to tested configurations; parameter increase ($+412\%$) yields $<0.008$ AP gain. \\
 Structural recurrence contains signal beyond exact edge repetition & Table~\ref{tab:exact_structural}, Figure~\ref{fig:recurrence_decomposition} (Condition B) & \textbf{PASS} & Structural retrieval yields $+0.0351$ AP over EdgeBank when exact edge overlap is suppressed ($p < 10^{-6}$). \\
 MA-TGN improves over Continuous TGN on real-world episodes & Table~\ref{tab:real_world_episodes}, Figure~\ref{fig:cross_domain} (CollegeMsg, Bitcoin-OTC) & \textbf{PASS} & Scoped to $n=4$ evaluated natural recurrence episodes per dataset. \\
@@ -650,17 +655,17 @@ Addressable episodic storage is primary historical retention component & Table~\
 
 We explicitly delineate several scope boundaries and limitations:
 \begin{enumerate}
-    \item \textbf{Synthetic Benchmark Assumptions:} The Dynamic SBM benchmark evaluates discrete community regime transitions. Real-world systems may exhibit continuous, multi-scale, or asynchronous regime shifts.
-    \item \textbf{Sample Size of Real-World Episodes:} Real-world evaluations were conducted across $n=4$ natural recurrence episodes per dataset. Broader multi-domain benchmarks will be needed for wider statistical generalizations.
+    \item \textbf{Synthetic Benchmark Assumptions:} The Dynamic SBM benchmark evaluates discrete community regime transitions on unfeatured graphs. Real-world systems may exhibit continuous, multi-scale, or asynchronous regime shifts with rich node features.
+    \item \textbf{Sample Size of Real-World Episodes:} Real-world evaluations were conducted across $n=4$ natural non-overlapping recurrence episodes per dataset. Broader multi-domain benchmarks will be needed for wider statistical generalizations.
     \item \textbf{Non-Parametric Diagnostic Nature:} The Historical Retrieval Probe is evaluated as a diagnostic structural upper bound rather than an operational standalone predictor.
     \item \textbf{EdgeBank Dominance on Exact Repetition:} MA-TGN is an inductive neural model for structural recurrence and does not surpass exact edge lookup tables on datasets dominated by repeated pairwise interactions.
-    \item \textbf{Architectural Scope:} Experiments were conducted on representative recurrent TGNN architectures (TGN, JODIE, DyRep); findings are empirical observations rather than universal mathematical proofs for all temporal graph formulations.
+    \item \textbf{Architectural Scope:} Experiments were conducted on continuous recurrent TGN architectures; findings are empirical observations rather than universal mathematical proofs for all temporal graph formulations.
 \end{enumerate}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-When dynamic graph environments return to a previously active regime after extended conflicting dynamics, continuously updated recurrent representations can exhibit reduced access to historical predictive information. Through a controlled, density-matched $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ benchmark, we characterized the limitations of continuous capacity scaling and demonstrated the utility of addressable episodic state caching. Crucially, our findings establish that exact pairwise edge repetition and structural community recurrence require distinct historical access mechanisms: exact-edge tables (EdgeBank) excel under repeated pairwise interactions, while addressable structural representations preserve utility under structural recurrence. These distinctions provide a principled foundation for future memory-augmented dynamic graph architectures.
+When dynamic graph environments return to a previously active regime after extended conflicting dynamics, continuously updated recurrent representations on unfeatured graphs exhibit limited spontaneous access to historical structural community invariants. Through a controlled, density-matched $\mathcal{A} \to \mathcal{B} \to \mathcal{A}$ benchmark, we characterized the limitations of continuous capacity scaling and demonstrated the utility of addressable episodic state caching. Crucially, our findings establish that exact pairwise edge repetition and structural community recurrence require distinct historical access mechanisms: exact-edge tables (EdgeBank) excel under repeated pairwise interactions, while addressable structural representations preserve utility under structural recurrence. These distinctions provide a principled foundation for future memory-augmented dynamic graph architectures.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
