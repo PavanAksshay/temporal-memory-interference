@@ -7,6 +7,8 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import os
 
+FIGURES_DIR = "/Users/pavanaksshay/se_research/temporal_recurrence/paper/professor_comparison/figures"
+
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
     shd = OxmlElement('w:shd')
@@ -119,6 +121,28 @@ def add_callout(doc, text, title="KEY FINDING / SCIENTIFIC INVARIANT"):
     
     doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
+def add_figure(doc, filename, caption, width_inches=5.8):
+    filepath = os.path.join(FIGURES_DIR, filename)
+    if os.path.exists(filepath):
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(8)
+        p_img.paragraph_format.space_after = Pt(4)
+        run_img = p_img.add_run()
+        run_img.add_picture(filepath, width=Inches(width_inches))
+
+        p_cap = doc.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_before = Pt(0)
+        p_cap.paragraph_format.space_after = Pt(8)
+        run_cap = p_cap.add_run(caption)
+        run_cap.font.size = Pt(8.5)
+        run_cap.font.name = 'Calibri'
+        run_cap.font.italic = True
+        run_cap.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
+    else:
+        print(f"Warning: Figure {filename} not found at {filepath}")
+
 def add_table(doc, headers, data, caption=None, footnote=None):
     if caption:
         p_cap = doc.add_paragraph()
@@ -176,7 +200,7 @@ def add_table(doc, headers, data, caption=None, footnote=None):
     else:
         doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
-print("Setup completed. Building document...")
+print("Setup completed. Building document with integrated graphs/figures...")
 
 doc = Document()
 
@@ -189,12 +213,12 @@ for section in doc.sections:
 
 # Title & Abstract
 add_title(doc, "When History Recurs: Characterizing Temporal Memory Interference in Dynamic Graph Neural Networks")
-add_subtitle(doc, "Comprehensive Research Manuscript & Extended Experimental Reference (DOCX Version)")
+add_subtitle(doc, "Comprehensive Research Manuscript with Embedded Graphs & Figures (DOCX Version)")
 
 add_heading1(doc, "Abstract")
 add_p(doc, "Continuous-time Dynamic Graph Neural Networks (TGNNs) maintain evolving node memory states via recurrent units to capture temporal dependencies in relational interaction streams. While prior benchmarks evaluate performance under smooth temporal evolution or continuous drifts, real-world systems frequently exhibit temporal regime recurrence—where previously active community interaction patterns reappear after extended intervals of conflicting topological activity. In this work, we formalize and characterize Temporal Memory Interference, the degradation of historical recoverability in continuously updated node memory representations caused by intervening distractor regimes. Using a controlled Dynamic Stochastic Block Model (DSBM) benchmark with strictly matched marginal edge densities (ρ = 0.10) and an eight-point temporal non-anticipation audit, we evaluate how continuous recurrent memory models behave when historical regimes recur. We discover that unfeatured temporal graph attention operates at an empirical representation floor (AP ≈ 0.652), matching an uninterrupted baseline control (0.6531), whereas unguided historical retrieval exhibits monotonic duration-dependent degradation (0.7423 → 0.7193 as TB increases from 25 to 200). We disentangle recurrence into exact pairwise edge repetition versus latent structural community recurrence: exact edge tables (EdgeBank) dominate exact edge repetition (0.8884 AP) but collapse under structural community recurrence (0.5774 AP), where structural retrieval retains a statistically significant advantage (+0.0351 AP, p < 10^-6). Furthermore, evaluations on SNAP CollegeMsg and Bitcoin-OTC show that exact-edge caching achieves 0.8763 and 0.7753 AP, demonstrating the practical boundary between exact memorization and inductive continuous representation.")
 
-add_callout(doc, "1. Temporal Memory Interference is empirically characterized in unfeatured continuous TGNNs.\n2. Disentangles exact edge repetition (EdgeBank: 0.8884 AP) from latent structural recurrence (Retrieval: +0.0351 AP advantage).\n3. Validated on synthetic DSBM (n=10 seeds) and continuous interaction graphs (SNAP CollegeMsg & Bitcoin-OTC).", "CORE SCIENTIFIC CONTRIBUTIONS")
+add_callout(doc, "1. Temporal Memory Interference is empirically characterized in unfeatured continuous TGNNs.\n2. Disentangles exact edge repetition (EdgeBank: 0.8884 AP) from latent structural recurrence (Retrieval: +0.0351 AP advantage).\n3. Validated on synthetic DSBM (n=10 seeds) and continuous interaction graphs (SNAP CollegeMsg & Bitcoin-OTC).\n4. All 10 high-resolution empirical plots embedded inline.", "CORE SCIENTIFIC CONTRIBUTIONS")
 
 # Section 1
 add_heading1(doc, "1. Introduction")
@@ -203,6 +227,9 @@ add_p(doc, "Dynamic graphs represent evolving relational networks across telecom
 
 add_heading2(doc, "1.2 Motivation: The Gap in Recurrence Benchmarking")
 add_p(doc, "Standard dynamic graph benchmarks evaluate link prediction under forward-in-time chronological splits where graph dynamics evolve smoothly or undergo progressive drift. However, real-world relational systems frequently exhibit temporal recurrence: previously established interaction topologies re-emerge after periods of alternative topological activity (e.g., seasonal academic collaborations, cyclical financial trading patterns, or episodic communication bursts). When a network transitions from Regime A to a conflicting distractor Regime B and later recurs to Regime A, continuously updated recurrent memory models face a fundamental challenge: new interactions in Regime B overwrite node memory states, impairing the network's ability to recall structural patterns specific to Regime A.")
+
+# Figure 1: Benchmark Concept
+add_figure(doc, "fig1_benchmark_concept.png", "Figure 1: Conceptual Overview of the Controlled Temporal Recurrence Benchmark and Regime Sequence (Regime A1 -> Distractor Regime B -> Recurring Regime A2).")
 
 add_heading2(doc, "1.3 Research Hypotheses (H1–H4)")
 add_p(doc, "We formalize the study of temporal memory interference around four testable hypotheses:", bold_prefix="Formal Hypotheses: ")
@@ -283,8 +310,8 @@ tab4_data = [
 ]
 add_table(doc, tab4_headers, tab4_data, "Table 4: Link Prediction Performance (Average Precision) across Distractor Durations TB.", "Evaluated across 10 random seeds (42–51). Continuous uninterrupted control (A -> A) achieves AP = 0.6531 ± 0.001.")
 
-add_p(doc, "Key Insight 1: Unfeatured TGNN Representation Ceiling: Unfeatured 1-layer temporal graph attention sits at an empirical floor of AP ≈ 0.652. An uninterrupted continuous baseline (A -> A) achieves 0.6531 ± 0.001. Random Retrieval exhibits clear duration-dependent degradation (0.7423 -> 0.7193, p < 10^-4), confirming Hypothesis H1.")
-add_p(doc, "Key Insight 2: Heuristic Triangle Counting Advantage: Random Retrieval scores candidate edges using explicit topological triangle intersections over historical graphs (AP ≈ 0.74), outperforming unfeatured neural message passing which must learn higher-order intersections from unfeatured 1-hop embeddings.")
+# Figure 2: TB Response Curve
+add_figure(doc, "fig2_tb_response_curve.png", "Figure 2: Historical Recoverability as a Function of Intervening Distractor Duration TB in [25, 200] across 10 random seeds. Shows Random Retrieval degradation vs neural floor.")
 
 add_heading2(doc, "5.2 Recurrent Memory Capacity Scaling (dm in [16, 256])")
 add_p(doc, "To test Hypothesis H2, we scale the node recurrent memory dimension dm across {16, 32, 64, 128, 256} under distractor durations TB in {25, 50, 100, 200}.")
@@ -298,6 +325,12 @@ tab5_data = [
     ["dm = 256", "0.6535 ± 0.001", "0.6529 ± 0.001", "0.6528 ± 0.001", "0.6525 ± 0.001", "1,522,177", "+550.2%"]
 ]
 add_table(doc, tab5_headers, tab5_data, "Table 5: Recurrent Memory Hidden Dimension Capacity Scaling (10 Seeds).", "Expanding parameters by +550% provides negligible protection (<0.008 AP gain) against interference, confirming H2.")
+
+# Figure 3: Capacity Scaling
+add_figure(doc, "fig3_capacity_scaling.png", "Figure 3: Recurrent State Capacity Scaling (dm in [16, 256]) across Distractor Durations TB. Shows negligible protection from increasing memory parameters.")
+
+# Figure 7: Re-exposure Recovery Dynamics
+add_figure(doc, "fig7_reexposure_recovery.png", "Figure 4: Onset vs. Steady-State Recovery Dynamics across Re-exposure Timesteps (kA = 0 to 49).")
 
 add_heading2(doc, "5.3 Recurrence Decomposition: Exact Edge Repetition vs. Structural Signal")
 add_p(doc, "To test Hypothesis H4, we disentangle recurrence into exact pairwise edge repetition (Condition A) versus latent structural community recurrence (Condition B) and a novel regime control (Condition C).")
@@ -317,7 +350,8 @@ tab6_data = [
 ]
 add_table(doc, tab6_headers, tab6_data, "Table 6: Recurrence Decomposition: Exact Edge Repetition vs. Latent Structural Signal (TB=100).", "*Cumulative union Jaccard over 100 test snapshots covers almost all community pairs in Condition B due to rapid resampling (lambda_A=0.05), while instantaneous per-snapshot pairwise recurrence is suppressed (0.0480).")
 
-add_p(doc, "Double Dissociation Finding: EdgeBank dominates when exact pairwise edges repeat (0.8884 AP in Condition A) but collapses when recurrence is structural (0.5774 AP in Condition B). Structural historical retrieval maintains a statistically significant advantage (+0.0351 AP, p < 10^-6), confirming Hypothesis H4.")
+# Figure 6: Recurrence Decomposition
+add_figure(doc, "fig6_recurrence_decomposition.png", "Figure 5: Recurrence Decomposition: Performance Comparison under Exact Edge Recurrence (Condition A) vs. Structural Recurrence (Condition B) and Novel Control (Condition C).")
 
 add_heading2(doc, "5.4 Architectural Component and Addressing Ablations")
 add_p(doc, "We systematically ablate architectural components across Models A through G (Table 7) and memory addressing mechanisms (Table 8).")
@@ -334,6 +368,9 @@ tab7_data = [
 ]
 add_table(doc, tab7_headers, tab7_data, "Table 7: MA-TGN Architectural Component Ablation Matrix (TB=100, 5 Seeds).", "Model E matches Full MA-TGN within 0.0004 AP, demonstrating episodic storage is the primary historical carrier.")
 
+# Figure 4: Component Ablation
+add_figure(doc, "fig4_component_ablation.png", "Figure 6: Architectural Component Ablation Across Models A through G under Distractor Duration TB=100.")
+
 tab8_headers = ["Addressing Mechanism", "Mathematical Formulation", "AP (Mean ± Std)", "Onset AP (kA = 0)"]
 tab8_data = [
     ["Learned Attention Multi-Head", "alpha_k = Softmax(q^T W_Q W_K k / sqrt(d_k))", "0.6519 ± 0.0009", "0.6337"],
@@ -342,6 +379,9 @@ tab8_data = [
     ["Most Recent Checkpoint", "alpha_k = 1 for k = K, else 0", "0.6519 ± 0.0005", "0.6338"]
 ]
 add_table(doc, tab8_headers, tab8_data, "Table 8: Memory Addressing Mechanism and Key Routing Ablation (TB=100, 5 Seeds).", "Learned attention and cosine similarity perform comparably on discrete community regime shifts.")
+
+# Figure 8: Attention Routing Heatmaps
+add_figure(doc, "fig8_matgn_attention_routing.png", "Figure 7: Memory Addressing Attention Weights Across Episodic Bank Checkpoints during Regime Transitions.")
 
 add_heading2(doc, "5.5 Real-World Continuous Streams: SNAP CollegeMsg and Bitcoin-OTC")
 add_p(doc, "We evaluate natural multi-week recurrence episodes in organic continuous interaction networks (Table 9).")
@@ -359,7 +399,8 @@ tab9_data = [
 ]
 add_table(doc, tab9_headers, tab9_data, "Table 9: Real-World Natural Recurrence Episode Performance across SNAP Datasets.", "Evaluated across n=4 natural multi-interval recurrence episodes per dataset.")
 
-add_p(doc, "Boundary Condition Confirmation: Real-world communication and trust networks exhibit high exact pairwise edge repetition (users message identical contacts), making EdgeBank (0.8763 and 0.7753) the optimal baseline. Within continuous inductive neural representations, episodic addressing achieves consistent +0.021 to +0.026 AP improvements over standard TGN.")
+# Figure 9: Cross-Domain Real-World Comparison
+add_figure(doc, "fig9_cross_domain_comparison.png", "Figure 8: Performance across Natural Recurrence Episodes on Real-World SNAP CollegeMsg and Bitcoin-OTC Networks.")
 
 add_heading2(doc, "5.6 Computational Complexity, Analytical Memory, and Latency")
 add_p(doc, "Table 10 profiles the computational overhead and memory footprint across bank capacities K in {1, 2, 4, 8, 10, 16, 32}.")
@@ -375,6 +416,10 @@ tab10_data = [
     ["K = 32", "2,481.0 KB", "2.81 MB", "4.79 microseconds", "208,760"]
 ]
 add_table(doc, tab10_headers, tab10_data, "Table 10: Computational Complexity, Analytical Memory Footprint, and Inference Latency Profile.", "Analytical RAM: 4*(N*dm + K*dk + K*N*dm)/1024 KB. Canonical configuration requires only 827.5 KB RAM.")
+
+# Figure 5 & 10: Memory Budget & Tradeoff
+add_figure(doc, "fig5_memory_budget_vs_ap.png", "Figure 9: Episodic Memory Bank Capacity K in [1, 32] vs. Link Prediction AP.")
+add_figure(doc, "fig10_tradeoff_accuracy_cost.png", "Figure 10: Pareto Tradeoff Profile: Link Prediction Accuracy vs. Analytical Memory Cost.")
 
 # Section 6: Discussion & Conclusion
 add_heading1(doc, "6. Discussion and Scientific Synthesis")
@@ -417,7 +462,7 @@ doc.save(output_path_root)
 doc.save(output_path_comp)
 doc.save(output_path_final)
 
-print(f"Successfully generated DOCX paper files at:")
+print(f"Successfully generated DOCX paper files with embedded figures at:")
 print(f"  1. {output_path_root}")
 print(f"  2. {output_path_comp}")
 print(f"  3. {output_path_final}")
