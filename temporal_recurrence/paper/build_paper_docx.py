@@ -6,8 +6,10 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import os
+import re
 
 FIGURES_DIR = "/Users/pavanaksshay/se_research/temporal_recurrence/paper/professor_comparison/figures"
+BIB_FILE = "/Users/pavanaksshay/se_research/temporal_recurrence/paper/professor_comparison/references.bib"
 
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -200,7 +202,42 @@ def add_table(doc, headers, data, caption=None, footnote=None):
     else:
         doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
-print("Setup completed. Building document with integrated graphs/figures...")
+def parse_bibtex(bib_path):
+    with open(bib_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    entries = []
+    raw_entries = re.findall(r'@(\w+)\s*\{\s*([^,]+),\s*(.*?)\n\}', content, re.DOTALL)
+    for entry_type, cite_key, fields_str in raw_entries:
+        fields = {}
+        for line in fields_str.splitlines():
+            m = re.match(r'^\s*(\w+)\s*=\s*[\{"]?(.*?)[\}"]?,?\s*$', line)
+            if m:
+                k, v = m.group(1).lower(), m.group(2).strip()
+                v = re.sub(r'[\{\}]', '', v)
+                fields[k] = v
+        
+        author = fields.get('author', 'Unknown Author')
+        title = fields.get('title', 'Untitled')
+        year = fields.get('year', '')
+        booktitle = fields.get('booktitle', fields.get('journal', ''))
+        volume = fields.get('volume', '')
+        pages = fields.get('pages', '')
+        
+        ref_text = f"{author}. \"{title}.\" In {booktitle}"
+        if volume:
+            ref_text += f", vol. {volume}"
+        if pages:
+            ref_text += f", pp. {pages}"
+        if year:
+            ref_text += f", {year}."
+        else:
+            ref_text += "."
+            
+        entries.append((cite_key, ref_text))
+    return entries
+
+print("Building complete research paper document...")
 
 doc = Document()
 
@@ -213,12 +250,12 @@ for section in doc.sections:
 
 # Title & Abstract
 add_title(doc, "When History Recurs: Characterizing Temporal Memory Interference in Dynamic Graph Neural Networks")
-add_subtitle(doc, "Comprehensive Research Manuscript with Embedded Graphs & Figures (DOCX Version)")
+add_subtitle(doc, "Comprehensive Research Manuscript with Embedded Figures & References (DOCX Version)")
 
 add_heading1(doc, "Abstract")
 add_p(doc, "Continuous-time Dynamic Graph Neural Networks (TGNNs) maintain evolving node memory states via recurrent units to capture temporal dependencies in relational interaction streams. While prior benchmarks evaluate performance under smooth temporal evolution or continuous drifts, real-world systems frequently exhibit temporal regime recurrence—where previously active community interaction patterns reappear after extended intervals of conflicting topological activity. In this work, we formalize and characterize Temporal Memory Interference, the degradation of historical recoverability in continuously updated node memory representations caused by intervening distractor regimes. Using a controlled Dynamic Stochastic Block Model (DSBM) benchmark with strictly matched marginal edge densities (ρ = 0.10) and an eight-point temporal non-anticipation audit, we evaluate how continuous recurrent memory models behave when historical regimes recur. We discover that unfeatured temporal graph attention operates at an empirical representation floor (AP ≈ 0.652), matching an uninterrupted baseline control (0.6531), whereas unguided historical retrieval exhibits monotonic duration-dependent degradation (0.7423 → 0.7193 as TB increases from 25 to 200). We disentangle recurrence into exact pairwise edge repetition versus latent structural community recurrence: exact edge tables (EdgeBank) dominate exact edge repetition (0.8884 AP) but collapse under structural community recurrence (0.5774 AP), where structural retrieval retains a statistically significant advantage (+0.0351 AP, p < 10^-6). Furthermore, evaluations on SNAP CollegeMsg and Bitcoin-OTC show that exact-edge caching achieves 0.8763 and 0.7753 AP, demonstrating the practical boundary between exact memorization and inductive continuous representation.")
 
-add_callout(doc, "1. Temporal Memory Interference is empirically characterized in unfeatured continuous TGNNs.\n2. Disentangles exact edge repetition (EdgeBank: 0.8884 AP) from latent structural recurrence (Retrieval: +0.0351 AP advantage).\n3. Validated on synthetic DSBM (n=10 seeds) and continuous interaction graphs (SNAP CollegeMsg & Bitcoin-OTC).\n4. All 10 high-resolution empirical plots embedded inline.", "CORE SCIENTIFIC CONTRIBUTIONS")
+add_callout(doc, "1. Temporal Memory Interference is empirically characterized in unfeatured continuous TGNNs.\n2. Disentangles exact edge repetition (EdgeBank: 0.8884 AP) from latent structural recurrence (Retrieval: +0.0351 AP advantage).\n3. Validated on synthetic DSBM (n=10 seeds) and continuous interaction graphs (SNAP CollegeMsg & Bitcoin-OTC).\n4. All 10 high-resolution empirical plots and 30 bibliographic references included.", "CORE SCIENTIFIC CONTRIBUTIONS")
 
 # Section 1
 add_heading1(doc, "1. Introduction")
@@ -435,6 +472,27 @@ add_p(doc, "We transparently outline three empirical boundaries of this study: (
 add_heading1(doc, "8. Conclusion")
 add_p(doc, "This paper formalizes and characterizes Temporal Memory Interference in continuous Dynamic Graph Neural Networks. Through a controlled DSBM benchmark, an 8-point temporal non-anticipation audit, and exact vs. structural recurrence decomposition, we demonstrated the limitations of unfeatured continuous recurrent compression and showed how addressable episodic state caching preserves historical structural patterns. We hope this work encourages new research into memory-augmented dynamic graph architectures capable of lifelong, multi-regime temporal reasoning.")
 
+# Section 9: References
+add_heading1(doc, "References")
+bib_entries = parse_bibtex(BIB_FILE)
+for i, (key, ref_str) in enumerate(bib_entries, start=1):
+    p_ref = doc.add_paragraph()
+    p_ref.paragraph_format.space_before = Pt(0)
+    p_ref.paragraph_format.space_after = Pt(4)
+    p_ref.paragraph_format.left_indent = Inches(0.3)
+    p_ref.paragraph_format.first_line_indent = Inches(-0.3)
+    
+    r_num = p_ref.add_run(f"[{i}] ")
+    r_num.bold = True
+    r_num.font.size = Pt(9)
+    r_num.font.name = 'Calibri'
+    r_num.font.color.rgb = RGBColor(0x1E, 0x29, 0x3B)
+    
+    r_text = p_ref.add_run(ref_str)
+    r_text.font.size = Pt(9)
+    r_text.font.name = 'Calibri'
+    r_text.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
+
 # Appendices
 add_heading1(doc, "Supplementary Material & Appendices")
 
@@ -462,7 +520,7 @@ doc.save(output_path_root)
 doc.save(output_path_comp)
 doc.save(output_path_final)
 
-print(f"Successfully generated DOCX paper files with embedded figures at:")
+print(f"Successfully generated DOCX paper files with embedded figures and {len(bib_entries)} references at:")
 print(f"  1. {output_path_root}")
 print(f"  2. {output_path_comp}")
 print(f"  3. {output_path_final}")
