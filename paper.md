@@ -26,9 +26,21 @@ Continuous-time temporal graph neural networks keep evolving node states while p
 ## 1. Introduction
 
 ### 1.1 Problem: Dynamic Relational Streams with Recurring Dynamics
-Dynamic graphs occur in communication, social, commercial, financial, and collaborative systems, where the set of active relationships changes over time [28, 36]. Formally, let $G_t = (\mathcal{V}, \mathcal{E}_t)$ denote a dynamic relational network at time $t$, where interactions arrive as an asynchronous stream of timestamped events $e = (u, v, t)$ with $u, v \in \mathcal{V}$. Models such as TGN, DyRep, JODIE, and TGAT process timestamped interactions and update continuous recurrent node representations $m_v(t)$ as new events arrive [1–4]:
-$$m_v(t) = \text{GRU}\left(m_v(t^-), \bar{m}_v(t)\right)$$
-where $t^-$ is the timestamp of the previous interaction involving node $v$, and $\bar{m}_v(t)$ is the aggregated message vector computed over recent events. Our concern is not whether these models can predict the next event in general. It is whether a representation that is updated continuously can still expose an earlier structural pattern after a period of conflicting activity.
+Dynamic graphs occur in communication, social, commercial, financial, and collaborative systems, where the set of active relationships changes over time [28, 36]. Formally, let $G_t = (\mathcal{V}, \mathcal{E}_t)$ denote a dynamic relational network at time $t$, where interactions arrive as an asynchronous stream of timestamped events:
+$$e_k = (u_k, v_k, t_k, \mathbf{e}_k) \in \mathcal{V} \times \mathcal{V} \times \mathbb{R}^+ \times \mathbb{R}^{d_e} \tag{1}$$
+with $u_k, v_k \in \mathcal{V}$ and $\mathbf{e}_k$ representing optional edge features. Continuous-time dynamic graph neural networks (e.g., TGN, DyRep, JODIE, TGAT) process these events sequentially [1–4]. For an interaction $(u, v)$ occurring at time $t$, raw messages are computed by a message function:
+$$\mathbf{m}_u(t) = \text{msg}\left(m_u(t^-), m_v(t^-), \Delta t, \mathbf{e}_{uv}(t)\right) \tag{2}$$
+where $t^-$ is the timestamp of the previous interaction involving node $u$, and $\Delta t = t - t^-$. When multiple interactions occur within the same temporal batch, messages for node $u$ are aggregated via:
+$$\bar{\mathbf{m}}_u(t) = \text{agg}\left(\left\{\mathbf{m}_u(t_i) : t_i \le t, i \in \mathcal{N}_u(t)\right\}\right) \tag{3}$$
+The continuous recurrent node representation $m_u(t)$ is subsequently updated via a recurrent cell (e.g., GRU):
+$$m_u(t) = \text{GRU}\left(m_u(t^-), \bar{\mathbf{m}}_u(t)\right) \tag{4}$$
+To capture fine-grained temporal intervals, continuous harmonic time encodings map time differences $\Delta t$ into continuous Fourier features:
+$$\Phi(\Delta t) = \left[\cos(\omega_1 \Delta t), \sin(\omega_1 \Delta t), \dots, \cos(\omega_{d_t} \Delta t), \sin(\omega_{d_t} \Delta t)\right]^\top \tag{5}$$
+where $\omega_i$ are learnable or harmonic frequencies. Finally, temporal graph attention or convolution aggregates dynamic neighborhood features into a localized embedding:
+$$z_u(t) = \sum_{v \in \mathcal{N}(u)} \beta_{uv}(t) \mathbf{W}_v \left[ m_v(t) \parallel \Phi(t - t_v) \right] \tag{6}$$
+where $\beta_{uv}(t)$ denotes dynamic temporal attention coefficients.
+
+While these formulations enable next-event forecasting, our primary concern is whether a representation governed by Eq. (4) and Eq. (6) can preserve and retrieve earlier structural regimes after prolonged exposure to conflicting graph dynamics.
 
 ### 1.2 Motivation: The Gap in Recurrence Benchmarking
 Most dynamic link-prediction benchmarks use chronological splits, with earlier events used to predict later events [14, 16, 19, 32]. Such a split is useful for forecasting, but it does not isolate the case in which an earlier regime returns after a conflicting interval. Our benchmark therefore uses an $\mathcal{A}_1 \to \mathcal{B} \to \mathcal{A}_2$ sequence (illustrated in **Figure 1**) and varies both the length and the type of $\mathcal{B}$. The matched $\mathcal{A}_1 \to \mathcal{A}_2$ sequence serves as the control, allowing the effect of the intervening regime to be measured directly.
@@ -72,13 +84,20 @@ As organized in **Table 1**, existing architectural families employ fundamentall
 
 ## 3. Problem Formulation and Temporal Non-Anticipation Audit
 
-Let $G_t = (\mathcal{V}, \mathcal{E}_t)$ be the graph at time $t$ and let $e = (u, v, t)$ denote an interaction event. A recurrent TGNN maintains a node state $m_v(t)$, updated only with information available up to time $t$ [1, 2]. We evaluate link prediction when Regime $\mathcal{A}$ returns after $\mathcal{A}_1 \to \mathcal{B} \to \mathcal{A}_2$ and compare it with the matched $\mathcal{A}_1 \to \mathcal{A}_2$ control, which removes the intervening $\mathcal{B}$ regime.
+Let $G_t = (\mathcal{V}, \mathcal{E}_t)$ be the graph at time snapshot $t$ and let $e = (u, v, t)$ denote an interaction event. A recurrent TGNN maintains a node state $m_v(t)$, updated strictly with historical information available up to time $t$ [1, 2]. Link prediction optimizes a binary cross-entropy loss over observed edges $\mathcal{E}_t^+$ and sampled negative pairs $\mathcal{E}_t^-$:
+$$\mathcal{L}_{\text{BCE}} = -\sum_{(u, v) \in \mathcal{E}_t^+} \log \hat{y}_{uv}(t) - \sum_{(u, v') \in \mathcal{E}_t^-} \log \left(1 - \hat{y}_{uv'}(t)\right) \tag{7}$$
+where $\hat{y}_{uv}(t) \in [0, 1]$ represents the predicted probability of an edge existing between nodes $u$ and $v$.
 
 ### 3.1 Definition of Temporal Memory Interference
-We define Temporal Memory Interference ($\text{TMI}$) as:
-$$\text{TMI}(T_B) = \text{AP}(\mathcal{A}_1 \to \mathcal{A}_2 \text{ uninterrupted}) - \text{AP}(\mathcal{A}_1 \to \mathcal{B}(T_B) \to \mathcal{A}_2)$$
+We evaluate dynamic link prediction when Regime $\mathcal{A}$ returns after an $\mathcal{A}_1 \to \mathcal{B} \to \mathcal{A}_2$ sequence and compare it with the matched $\mathcal{A}_1 \to \mathcal{A}_2$ control, which removes the intervening $\mathcal{B}$ distractor regime. Formally, Temporal Memory Interference ($\text{TMI}$) is defined as:
+$$\text{TMI}(T_B) = \text{AP}(\mathcal{A}_1 \to \mathcal{A}_2 \text{ uninterrupted}) - \text{AP}(\mathcal{A}_1 \to \mathcal{B}(T_B) \to \mathcal{A}_2) \tag{8}$$
 
-A positive $\text{TMI}$ value indicates that dynamic link prediction performance is lower after the intervening $\mathcal{B}$ regime than in the uninterrupted control. A value close to zero is not, by itself, evidence that the representation retained the earlier information: it can also arise when both conditions are already near the model's performance floor. That is why the control is interpreted together with the historical retrieval probes.
+The Average Precision ($\text{AP}$) metric used in Eq. (8) summarizes the precision-recall curve across $M$ ranked candidate pairs:
+$$\text{AP} = \sum_{k=1}^M \left( R_k - R_{k-1} \right) P_k \tag{9}$$
+where $P_k$ and $R_k$ denote precision and recall at rank threshold $k$, with $R_0 = 0$. A positive $\text{TMI}(T_B)$ value in Eq. (8) indicates that performance drops after the intervening $\mathcal{B}$ regime compared to the uninterrupted baseline. A value close to zero can also occur when both conditions reach the model's performance floor; hence, Eq. (8) is interpreted alongside historical retrieval probes.
+
+To quantify regime similarity and edge repetition across temporal windows, we compute instantaneous Jaccard similarity $J_{\text{inst}}$ and cumulative window Jaccard similarity $J_{\text{cum}}$:
+$$J_{\text{inst}}(t, t') = \frac{|\mathcal{E}_t \cap \mathcal{E}_{t'}|}{|\mathcal{E}_t \cup \mathcal{E}_{t'}|}, \quad J_{\text{cum}}(T_1, T_2) = \frac{\left|\bigcup_{t \in T_1} \mathcal{E}_t \cap \bigcup_{t' \in T_2} \mathcal{E}_{t'}\right|}{\left|\bigcup_{t \in T_1} \mathcal{E}_t \cup \bigcup_{t' \in T_2} \mathcal{E}_{t'}\right|} \tag{10}$$
 
 ### 3.2 Eight-Point Temporal Non-Anticipation Audit
 For every compared method, we applied the same eight non-anticipation checks. As detailed in **Table 2**, they cover candidate and label parity, temporal masking, update order, regime-boundary blindness, checkpoint masking, and shared negative sampling. Together, these checks address the main sources of temporal leakage in this benchmark; they are not intended as a causal identification procedure.
@@ -102,15 +121,19 @@ The audit was applied to all reported runs. In the released implementation, we r
 
 ## 4. Controlled Synthetic Dynamic SBM Benchmark
 
-We generate synthetic relational streams using a parameterized Dynamic Stochastic Block Model (DSBM) [27], which enables us to vary regime recurrence while maintaining strictly invariant edge density on average. Our synthetic benchmark consists of $N=300$ nodes partitioned into $K_c=3$ equal-sized ground-truth communities ($100$ nodes each). Each snapshot is generated with marginal density $\rho=0.10$.
+We generate synthetic relational streams using a parameterized Dynamic Stochastic Block Model (DSBM) [27], which enables us to vary regime recurrence while maintaining strictly invariant edge density on average. Our synthetic benchmark consists of $N=300$ nodes partitioned into $K_c=3$ equal-sized ground-truth communities ($100$ nodes each). Let $C^{(r)}(u) \in \{1, \dots, K_c\}$ denote the community assignment of node $u$ under regime $r$. The latent block connection probability matrix $\mathbf{W}^{(r)} \in [0, 1]^{N \times N}$ is:
+$$W_{uv}^{(r)} = \begin{cases} p_{\text{in}}^{(r)}, & \text{if } C^{(r)}(u) = C^{(r)}(v) \\ p_{\text{out}}^{(r)}, & \text{if } C^{(r)}(u) \neq C^{(r)}(v) \end{cases} \tag{11}$$
+where $p_{\text{in}}^{(r)}$ and $p_{\text{out}}^{(r)}$ denote intra-community and inter-community connection probabilities.
 
 Edge dynamics follow a first-order Markov persistence process with transition probabilities:
-$$P((u, v) \in \mathcal{E}_{t+1} \mid (u, v) \in \mathcal{E}_t, r) = (1 - b_e^{(r)}) X_{e,t} + a_e^{(r)} (1 - X_{e,t})$$
-where $X_{e,t} \in \{0, 1\}$ is the edge indicator variable at snapshot $t$. The transition rates are defined as:
-$$a_e^{(r)} = W_e^{(r)} (1 - \lambda_r), \quad b_e^{(r)} = (1 - W_e^{(r)}) (1 - \lambda_r)$$
-where $W_e^{(r)}$ denotes the block connection probability matrix for regime $r$, and $\lambda_r \in [0, 1)$ governs Markov temporal persistence. For community partition $\mathcal{A}$, intra-cluster probability is $p_{\text{in}}$ and inter-cluster probability is $p_{\text{out}}$, calibrated such that the marginal edge density:
-$$\rho = \frac{p_{\text{in}} + 2 p_{\text{out}}}{3} = 0.10$$
-is strictly invariant across all regimes.
+$$P\left((u, v) \in \mathcal{E}_{t+1} \mid (u, v) \in \mathcal{E}_t, r\right) = (1 - b_e^{(r)}) X_{e,t} + a_e^{(r)} (1 - X_{e,t}) \tag{12}$$
+where $X_{e,t} \in \{0, 1\}$ is the edge indicator variable at snapshot $t$. The transition rates in Eq. (12) are defined as:
+$$a_e^{(r)} = W_e^{(r)} (1 - \lambda_r), \quad b_e^{(r)} = (1 - W_e^{(r)}) (1 - \lambda_r) \tag{13}$$
+where $W_e^{(r)}$ is given by Eq. (11) and $\lambda_r \in [0, 1)$ governs Markov temporal persistence. The stationary marginal edge existence probability under Eq. (12) and Eq. (13) satisfies:
+$$\pi_e^{(r)} = \lim_{t \to \infty} P(X_{e,t} = 1 \mid r) = \frac{a_e^{(r)}}{a_e^{(r)} + b_e^{(r)}} = W_e^{(r)} \tag{14}$$
+To ensure that regime changes are purely structural without trivial edge density shifts, the marginal edge density is calibrated as:
+$$\rho = \frac{p_{\text{in}} + (K_c - 1) p_{\text{out}}}{K_c} = \frac{p_{\text{in}} + 2 p_{\text{out}}}{3} = 0.10 \tag{15}$$
+which is strictly invariant across all regimes $\mathcal{A}$, $\mathcal{B}$, and $\mathcal{C}$.
 
 The synthetic experimental schedule consists of $100$ snapshots of initial Regime $\mathcal{A}_1$, followed by $T_B \in \{25, 50, 100, 200\}$ snapshots of distractor Regime $\mathcal{B}$ (generated with an independent community assignment), followed by $50$ snapshots of recurring Regime $\mathcal{A}_2$. All experiments are executed across 10 independent random seeds (42–51). **Table 3** summarizes the canonical DSBM parameters.
 
@@ -210,14 +233,22 @@ The graph is resampled repeatedly over the 100 test snapshots. As a result, the 
 
 ### 5.4 Architectural Component and Addressing Ablations
 
-**Table 7** and **Table 8** examine the MA-TGN components and addressing rules at $T_B=100$. In MA-TGN, an episodic query vector:
-$$q_u(t) = \mathbf{W}_q [s_u(t) \parallel \mathbf{x}_u] + \mathbf{b}_q$$
-attends over stored snapshot checkpoints to retrieve a historical representation:
-$$\tilde{s}_u(t) = \sum_{\tau_k \le t} \alpha_{u,k}(t) \mathbf{V}_k[u]$$
-which is fused via adaptive gating:
-$$g_u(t) = \sigma\left(\mathbf{W}_g [s_u(t) \parallel \tilde{s}_u(t)] + \mathbf{b}_g\right), \quad h_u(t) = g_u(t) \odot s_u(t) + (1 - g_u(t)) \odot \tilde{s}_u(t)$$
-Dynamic link prediction is scored by an MLP decoder:
-$$\hat{y}_{uv}(t) = \sigma\left(\text{MLP}([h_u(t) \parallel h_v(t) \parallel h_u(t) \odot h_v(t)])\right)$$
+**Table 7** and **Table 8** examine the MA-TGN components and addressing rules at $T_B=100$. In MA-TGN, an episodic key vector $\mathbf{k}_k \in \mathbb{R}^{d_k}$ summarizes the global graph state at snapshot checkpoint $\tau_k$:
+$$\mathbf{k}_k = \mathbf{W}_k \left( \frac{1}{|\mathcal{V}|} \sum_{v \in \mathcal{V}} s_v(\tau_k) \right) + \mathbf{b}_k \tag{16}$$
+At test time $t$, each active node $u$ computes an episodic query vector $q_u(t) \in \mathbb{R}^{d_k}$:
+$$q_u(t) = \mathbf{W}_q [s_u(t) \parallel \mathbf{x}_u] + \mathbf{b}_q \tag{17}$$
+The query vector in Eq. (17) attends over stored historical checkpoint keys via scaled dot-product attention:
+$$\alpha_{u,k}(t) = \frac{\exp\left( \frac{q_u(t)^\top \mathbf{k}_k}{\sqrt{d_k}} \right)}{\sum_{j: \tau_j \le t} \exp\left( \frac{q_u(t)^\top \mathbf{k}_j}{\sqrt{d_k}} \right)} \tag{18}$$
+where future checkpoints ($\tau > t$) are masked with $-\infty$ as mandated by the audit. Using the attention weights $\alpha_{u,k}(t)$ from Eq. (18), the retrieved historical state representation is computed as:
+$$\tilde{s}_u(t) = \sum_{\tau_k \le t} \alpha_{u,k}(t) \mathbf{V}_k[u] \tag{19}$$
+where $\mathbf{V}_k[u] \in \mathbb{R}^{d_m}$ is the cached node embedding at checkpoint $\tau_k$. The retrieved state $\tilde{s}_u(t)$ from Eq. (19) is fused with current state $s_u(t)$ via an adaptive gating vector:
+$$g_u(t) = \sigma\left(\mathbf{W}_g [s_u(t) \parallel \tilde{s}_u(t)] + \mathbf{b}_g\right) \tag{20}$$
+producing the final gated representation:
+$$h_u(t) = g_u(t) \odot s_u(t) + (1 - g_u(t)) \odot \tilde{s}_u(t) \tag{21}$$
+Dynamic link prediction probability for candidate pair $(u, v)$ is scored by an MLP decoder over the fused representations from Eq. (21):
+$$\hat{y}_{uv}(t) = \sigma\left(\text{MLP}([h_u(t) \parallel h_v(t) \parallel h_u(t) \odot h_v(t)])\right) \tag{22}$$
+For diagnostic reference, the Historical Retrieval Probe computes the unweighted empirical edge frequency over the initial regime history $\mathcal{H}_A = \{\tau : \tau \in \text{Regime } \mathcal{A}_1\}$:
+$$\hat{y}_{uv}^{\text{probe}}(t) = \frac{1}{|\mathcal{H}_A|} \sum_{\tau \in \mathcal{H}_A} \mathbf{1}\left\{ (u, v) \in \mathcal{E}_\tau \right\} \tag{23}$$
 
 *Table 7: MA-TGN Architectural Component Ablation Matrix ($T_B=100$, 5 Seeds).*
 
@@ -390,14 +421,18 @@ The reported models use Adam with $\beta_1=0.9$, $\beta_2=0.999$, learning rate 
 ### Appendix B: Eight-Point Non-Anticipation Audit Protocol
 The eight-point audit was applied to every reported run: candidate-edge parity, label parity, strict temporal masking, post-evaluation memory updates, feature and node-identity checks, checkpoint masking, regime-boundary blindness, and deterministic shared negative generation. These conditions are suitable for automated assertions in the released implementation.
 
-### Appendix C: Analytical Memory Derivations
-Analytical RAM formula for episodic memory bank storage:
-$$M_{\text{RAM}} = \frac{4 \times (N \cdot d_m + K \cdot d_k + K \cdot N \cdot d_m)}{1024} \text{ KB}$$
+### Appendix C: Analytical Memory and Complexity Derivations
+The analytical RAM footprint $M_{\text{RAM}}$ required by the episodic memory bank is derived as the sum of continuous node memory, episodic key vectors, and snapshot node value matrices:
+$$M_{\text{RAM}} = \frac{4 \times (N \cdot d_m + K \cdot d_k + K \cdot N \cdot d_m)}{1024} \text{ KB} \tag{24}$$
 
-For $N=300$, $d_m=64$, $d_k=64$, $K=10$, this gives:
+For canonical parameters ($N=300$, $d_m=64$, $d_k=64$, $K=10$), Eq. (24) evaluates to:
 $$4 \times (19{,}200 + 640 + 192{,}000) / 1024 = 827.5 \text{ KB}$$
 
-Using the same calculation with $N=10{,}000$ and $K=20$ gives an estimated bank size of $52.5\text{ MB}$.
+For large-scale graphs with $N=10{,}000$ and $K=20$, Eq. (24) yields an estimated bank size of $52.5\text{ MB}$.
+
+The per-candidate scoring latency complexity $T_{\text{infer}}$ is governed by attention routing and gated MLP decoding:
+$$T_{\text{infer}} = \mathcal{O}\left( d_m \cdot d_{\text{mlp}} + K \cdot d_k + K \cdot d_m \right) \tag{25}$$
+which scales linearly with bank capacity $K$, matching the sub-3 microsecond empirical profile reported in **Table 10**.
 
 ### Appendix D: Real-World Episode Selection Protocol
 The real-world analysis uses exploratory multi-week episodes from SNAP CollegeMsg ([https://snap.stanford.edu/data/CollegeMsg.html](https://snap.stanford.edu/data/CollegeMsg.html)) and SNAP Bitcoin-OTC ([https://snap.stanford.edu/data/soc-sign-bitcoin-otc.html](https://snap.stanford.edu/data/soc-sign-bitcoin-otc.html)) [25, 26]. The reproducibility record should state the community-detection method, label-alignment procedure, overlap threshold, and treatment of overlapping CollegeMsg windows. Bitcoin-OTC is a signed trust network. We therefore do not assign market-cycle labels unless an external price series and a clearly defined segmentation rule are available.

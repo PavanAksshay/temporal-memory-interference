@@ -272,7 +272,19 @@ def build_paper():
     # Section 1: Introduction
     add_heading1(doc, "1. Introduction")
     add_heading2(doc, "1.1 Problem: Dynamic Relational Streams with Recurring Dynamics")
-    add_body_p(doc, "Dynamic graphs occur in communication, social, commercial, financial, and collaborative systems, where the set of active relationships changes over time [28, 36]. Formally, let G_t = (V, E_t) denote a dynamic relational network at time t, where interactions arrive as an asynchronous stream of timestamped events e = (u, v, t) with u, v in V. Models such as TGN, DyRep, JODIE, and TGAT process these interactions and update representations m_v(t) as new events arrive [1-4]. Our concern is not whether these models can predict the next event in general. It is whether a representation that is updated continuously can still expose an earlier structural pattern after a period of conflicting activity.")
+    add_body_p(doc, "Dynamic graphs occur in communication, social, commercial, financial, and collaborative systems, where the set of active relationships changes over time [28, 36]. Formally, let G_t = (V, E_t) denote a dynamic relational network at time t, where interactions arrive as an asynchronous stream of timestamped events:")
+    add_equation_p(doc, "e_k = (u_k, v_k, t_k, e_k) in V x V x R^+ x R^{d_e}    (1)")
+    add_body_p(doc, "with u_k, v_k in V and e_k representing optional edge features. Continuous-time dynamic graph neural networks (e.g., TGN, DyRep, JODIE, TGAT) process these events sequentially [1-4]. For an interaction (u, v) occurring at time t, raw messages are computed by a message function:")
+    add_equation_p(doc, "m_u(t) = msg(m_u(t^-), m_v(t^-), Delta t, e_{uv}(t))    (2)")
+    add_body_p(doc, "where t^- is the timestamp of the previous interaction involving node u, and Delta t = t - t^-. When multiple interactions occur within the same temporal batch, messages for node u are aggregated via:")
+    add_equation_p(doc, "m_bar_u(t) = agg({m_u(t_i) : t_i <= t, i in N_u(t)})    (3)")
+    add_body_p(doc, "The continuous recurrent node representation m_u(t) is subsequently updated via a recurrent cell (e.g., GRU):")
+    add_equation_p(doc, "m_u(t) = GRU(m_u(t^-), m_bar_u(t))    (4)")
+    add_body_p(doc, "To capture fine-grained temporal intervals, continuous harmonic time encodings map time differences Delta t into continuous Fourier features:")
+    add_equation_p(doc, "Phi(Delta t) = [cos(omega_1 Delta t), sin(omega_1 Delta t), ..., cos(omega_{d_t} Delta t), sin(omega_{d_t} Delta t)]^T    (5)")
+    add_body_p(doc, "where omega_i are learnable or harmonic frequencies. Finally, temporal graph attention or convolution aggregates dynamic neighborhood features into a localized embedding:")
+    add_equation_p(doc, "z_u(t) = sum_{v in N(u)} beta_{uv}(t) W_v [m_v(t) || Phi(t - t_v)]    (6)")
+    add_body_p(doc, "where beta_{uv}(t) denotes dynamic temporal attention coefficients. While these formulations enable next-event forecasting, our primary concern is whether a representation governed by Eq. (4) and Eq. (6) can preserve and retrieve earlier structural regimes after prolonged exposure to conflicting graph dynamics.")
 
     add_heading2(doc, "1.2 Motivation: The Gap in Recurrence Benchmarking")
     add_body_p(doc, "Most dynamic link-prediction benchmarks use chronological splits, with earlier events used to predict later events [14, 16, 19, 32]. Such a split is useful for forecasting, but it does not isolate the case in which an earlier regime returns after a conflicting interval. Our benchmark therefore uses an A1 -> B -> A2 sequence (illustrated in Figure 1) and varies both the length and the type of B. The matched A1 -> A2 sequence serves as the control, allowing the effect of the intervening regime to be measured directly.")
@@ -305,12 +317,17 @@ def build_paper():
 
     # Section 3: Problem Formulation
     add_heading1(doc, "3. Problem Formulation and Temporal Non-Anticipation Audit")
-    add_body_p(doc, "Let G_t=(V,E_t) be the graph at time t and let e=(u,v,t) denote an interaction. A recurrent TGNN maintains a node state m_v(t), updated only with information available up to time t [1, 2]. We evaluate link prediction when Regime A returns after A1 -> B -> A2 and compare it with the matched A1 -> A2 control, which removes the intervening B regime.")
+    add_body_p(doc, "Let G_t=(V,E_t) be the graph at time t and let e=(u,v,t) denote an interaction. A recurrent TGNN maintains a node state m_v(t), updated strictly with historical information available up to time t [1, 2]. Link prediction optimizes a binary cross-entropy loss over observed edges E_t^+ and sampled negative pairs E_t^-:")
+    add_equation_p(doc, "L_BCE = -sum_{(u, v) in E_t^+} log hat_y_{uv}(t) - sum_{(u, v') in E_t^-} log(1 - hat_y_{uv'}(t))    (7)")
+    add_body_p(doc, "where hat_y_{uv}(t) in [0, 1] represents the predicted link probability between nodes u and v.")
 
     add_heading2(doc, "3.1 Definition of Temporal Memory Interference")
-    add_body_p(doc, "We define Temporal Memory Interference (TMI) as the performance drop between the uninterrupted control and the regime-interrupted stream:")
-    add_equation_p(doc, "TMI(T_B) = AP(A1 -> A2 uninterrupted) - AP(A1 -> B(T_B) -> A2)")
-    add_body_p(doc, "A positive TMI value means that performance is lower after the intervening B regime than in the uninterrupted control. A value close to zero is not, by itself, evidence that the representation retained the earlier information: it can also arise when both conditions are already near the model's performance floor. That is why the control is interpreted together with the historical retrieval probes.")
+    add_body_p(doc, "We evaluate dynamic link prediction when Regime A returns after an A1 -> B -> A2 sequence and compare it with the matched A1 -> A2 control. Formally, Temporal Memory Interference (TMI) is defined as:")
+    add_equation_p(doc, "TMI(T_B) = AP(A1 -> A2 uninterrupted) - AP(A1 -> B(T_B) -> A2)    (8)")
+    add_body_p(doc, "The Average Precision (AP) metric used in Eq. (8) summarizes the precision-recall curve across M ranked candidate pairs:")
+    add_equation_p(doc, "AP = sum_{k=1}^M (R_k - R_{k-1}) P_k    (9)")
+    add_body_p(doc, "where P_k and R_k denote precision and recall at rank threshold k. A positive TMI value indicates performance loss following regime B. To quantify regime similarity and edge repetition, instantaneous and cumulative Jaccard similarities are defined as:")
+    add_equation_p(doc, "J_inst(t, t') = |E_t cap E_t'| / |E_t cup E_t'|,   J_cum(T_1, T_2) = |cup E_t cap cup E_t'| / |cup E_t cup cup E_t'|    (10)")
 
     add_heading2(doc, "3.2 Eight-Point Temporal Non-Anticipation Audit")
     add_body_p(doc, "For every compared method, we applied the same eight non-anticipation checks. As detailed in Table 2, they cover candidate and label parity, temporal masking, update order, regime-boundary blindness, checkpoint masking, and shared negative sampling. Together, these checks address the main sources of temporal leakage in this benchmark; they are not intended as a causal identification procedure.")
@@ -333,10 +350,16 @@ def build_paper():
 
     # Section 4: DSBM Benchmark
     add_heading1(doc, "4. Controlled Synthetic Dynamic SBM Benchmark")
-    add_body_p(doc, "We generate synthetic relational streams using a parameterized Dynamic Stochastic Block Model (DSBM) [27], which enables us to vary regime recurrence while maintaining strictly invariant edge density on average. Our synthetic benchmark consists of N=300 nodes partitioned into K_c=3 equal-sized ground-truth communities (100 nodes each). Each snapshot is generated with marginal density rho=0.10.")
+    add_body_p(doc, "We generate synthetic relational streams using a parameterized Dynamic Stochastic Block Model (DSBM) [27], which enables us to vary regime recurrence while maintaining strictly invariant edge density on average. Our synthetic benchmark consists of N=300 nodes partitioned into K_c=3 equal-sized ground-truth communities (100 nodes each). The latent block connection probability matrix W^{(r)} is:")
+    add_equation_p(doc, "W_{uv}^{(r)} = p_in^{(r)}  if C^{(r)}(u) = C^{(r)}(v);   p_out^{(r)}  if C^{(r)}(u) != C^{(r)}(v)    (11)")
     add_body_p(doc, "Edge dynamics follow a first-order Markov persistence process with transition probabilities:")
-    add_equation_p(doc, "P((u, v) in E_{t+1} | (u, v) in E_t, r) = (1 - b_e^{(r)}) X_{e,t} + a_e^{(r)} (1 - X_{e,t})")
-    add_body_p(doc, "where X_{e,t} in {0, 1} is the edge indicator at snapshot t. The transition rates are defined as a_e^{(r)} = W_e^{(r)} (1 - lambda_r) and b_e^{(r)} = (1 - W_e^{(r)}) (1 - lambda_r), where W_e^{(r)} is the block connection probability matrix for regime r and lambda_r in [0, 1) governs Markov temporal persistence. For community partition A, intra-cluster probability is p_in and inter-cluster probability is p_out, calibrated such that marginal density rho = (p_in + 2 p_out) / 3 = 0.10 is strictly invariant across all regimes.")
+    add_equation_p(doc, "P((u, v) in E_{t+1} | (u, v) in E_t, r) = (1 - b_e^{(r)}) X_{e,t} + a_e^{(r)} (1 - X_{e,t})    (12)")
+    add_body_p(doc, "where X_{e,t} in {0, 1} is the edge indicator at snapshot t. The transition rates in Eq. (12) are defined as:")
+    add_equation_p(doc, "a_e^{(r)} = W_e^{(r)} (1 - lambda_r),   b_e^{(r)} = (1 - W_e^{(r)}) (1 - lambda_r)    (13)")
+    add_body_p(doc, "The stationary marginal edge existence probability under Eq. (12) and Eq. (13) satisfies:")
+    add_equation_p(doc, "pi_e^{(r)} = lim_{t->inf} P(X_{e,t} = 1 | r) = a_e^{(r)} / (a_e^{(r)} + b_e^{(r)}) = W_e^{(r)}    (14)")
+    add_body_p(doc, "To ensure that regime changes are purely structural without edge density shifts, marginal edge density is calibrated as:")
+    add_equation_p(doc, "rho = (p_in + 2 p_out) / 3 = 0.10    (15)")
     add_body_p(doc, "The synthetic experimental schedule consists of 100 snapshots of initial Regime A1, followed by T_B in {25, 50, 100, 200} snapshots of distractor Regime B (with independent community assignment), followed by 50 snapshots of recurring Regime A2. All experiments are executed across 10 independent random seeds (42-51). Table 3 provides the canonical DSBM parameters.")
 
     format_table(doc, "Table 3: Controlled Dynamic Stochastic Block Model (DSBM) Parameters.",
@@ -422,7 +445,22 @@ def build_paper():
     add_body_p(doc, "The graph is resampled repeatedly over the 100 test snapshots. As a result, the union of all observed edges can become highly similar even when consecutive snapshots share relatively few edges. We therefore report both overlap measures and interpret them with respect to the generator used in this experiment.")
 
     add_heading2(doc, "5.4 Architectural Component and Addressing Ablations")
-    add_body_p(doc, "Tables 7 and 8 examine the MA-TGN components and addressing rules at T_B=100. In MA-TGN, an episodic query vector q_u(t) = W_q [s_u(t) || x_u] + b_q attends over stored snapshot checkpoints to retrieve historical representation s_tilde_u(t) = sum_{tau_k <= t} alpha_{u,k}(t) V_k[u], which is fused via adaptive gating g_u(t) = sigma(W_g [s_u(t) || s_tilde_u(t)] + b_g). Dynamic link prediction is scored by an MLP decoder hat_y_{uv}(t) = sigma(MLP([h_u(t) || h_v(t) || h_u(t) odot h_v(t)])).")
+    add_body_p(doc, "Tables 7 and 8 examine the MA-TGN components and addressing rules at T_B=100. In MA-TGN, an episodic key vector k_k in R^{d_k} summarizes the global graph state at snapshot checkpoint tau_k:")
+    add_equation_p(doc, "k_k = W_k ( (1/|V|) sum_{v in V} s_v(tau_k) ) + b_k    (16)")
+    add_body_p(doc, "At test time t, each active node u computes an episodic query vector q_u(t) in R^{d_k}:")
+    add_equation_p(doc, "q_u(t) = W_q [s_u(t) || x_u] + b_q    (17)")
+    add_body_p(doc, "The query vector in Eq. (17) attends over stored historical checkpoint keys via scaled dot-product attention:")
+    add_equation_p(doc, "alpha_{u,k}(t) = exp( q_u(t)^T k_k / sqrt(d_k) ) / sum_{j: tau_j <= t} exp( q_u(t)^T k_j / sqrt(d_k) )    (18)")
+    add_body_p(doc, "where future checkpoints (tau > t) are masked with -infinity as mandated by the audit. Using the attention weights alpha_{u,k}(t) from Eq. (18), the retrieved historical state representation is computed as:")
+    add_equation_p(doc, "s_tilde_u(t) = sum_{tau_k <= t} alpha_{u,k}(t) V_k[u]    (19)")
+    add_body_p(doc, "where V_k[u] in R^{d_m} is the cached node embedding at checkpoint tau_k. The retrieved state s_tilde_u(t) from Eq. (19) is fused with current state s_u(t) via an adaptive gating vector:")
+    add_equation_p(doc, "g_u(t) = sigma(W_g [s_u(t) || s_tilde_u(t)] + b_g)    (20)")
+    add_body_p(doc, "producing the final gated representation:")
+    add_equation_p(doc, "h_u(t) = g_u(t) odot s_u(t) + (1 - g_u(t)) odot s_tilde_u(t)    (21)")
+    add_body_p(doc, "Dynamic link prediction probability for candidate pair (u, v) is scored by an MLP decoder over the fused representations from Eq. (21):")
+    add_equation_p(doc, "hat_y_{uv}(t) = sigma(MLP([h_u(t) || h_v(t) || h_u(t) odot h_v(t)]))    (22)")
+    add_body_p(doc, "For diagnostic reference, the Historical Retrieval Probe computes the unweighted empirical edge frequency over the initial regime history H_A = {tau : tau in Regime A1}:")
+    add_equation_p(doc, "hat_y_{uv}^probe(t) = (1 / |H_A|) sum_{tau in H_A} 1{(u, v) in E_tau}    (23)")
 
     format_table(doc, "Table 7: MA-TGN Architectural Component Ablation Matrix (TB=100, 5 Seeds).",
         ["Model Variant", "Architecture Description", "AP (Mean ± Std)", "ROC-AUC", "Steady AP (kA = 40)"],
@@ -576,10 +614,13 @@ def build_paper():
     add_heading2(doc, "Appendix B: Eight-Point Non-Anticipation Audit Protocol")
     add_body_p(doc, "The eight-point audit was applied to every reported run: candidate-edge parity, label parity, strict temporal masking, post-evaluation memory updates, feature and node-identity checks, checkpoint masking, regime-boundary blindness, and deterministic shared negative generation. These conditions are suitable for automated assertions in the released implementation.")
 
-    add_heading2(doc, "Appendix C: Analytical Memory Derivations")
-    add_body_p(doc, "Analytical RAM formula for episodic memory bank storage:")
-    add_equation_p(doc, "M_RAM = 4 * (N * d_m + K * d_k + K * N * d_m) / 1024  (in KB)")
-    add_body_p(doc, "For N=300, d_m=64, d_k=64, K=10, this yields 4 * (19,200 + 640 + 192,000) / 1024 = 827.5 KB. Using the same calculation with N=10,000 and K=20 gives an estimated bank size of 52.5 MB.")
+    add_heading2(doc, "Appendix C: Analytical Memory and Complexity Derivations")
+    add_body_p(doc, "The analytical RAM footprint M_RAM required by the episodic memory bank is derived as the sum of continuous node memory, episodic key vectors, and snapshot node value matrices:")
+    add_equation_p(doc, "M_RAM = 4 * (N * d_m + K * d_k + K * N * d_m) / 1024  (in KB)    (24)")
+    add_body_p(doc, "For canonical parameters (N=300, d_m=64, d_k=64, K=10), Eq. (24) evaluates to 4 * (19,200 + 640 + 192,000) / 1024 = 827.5 KB. For large-scale graphs with N=10,000 and K=20, Eq. (24) yields an estimated bank size of 52.5 MB.")
+    add_body_p(doc, "The per-candidate scoring latency complexity T_infer is governed by attention routing and gated MLP decoding:")
+    add_equation_p(doc, "T_infer = O(d_m * d_mlp + K * d_k + K * d_m)    (25)")
+    add_body_p(doc, "which scales linearly with bank capacity K, matching the sub-3 microsecond empirical profile reported in Table 10.")
 
     add_heading2(doc, "Appendix D: Real-World Episode Selection Protocol")
     add_body_p(doc, "The real-world analysis uses exploratory multi-week episodes from SNAP CollegeMsg (https://snap.stanford.edu/data/CollegeMsg.html) and Bitcoin-OTC (https://snap.stanford.edu/data/soc-sign-bitcoin-otc.html) [25, 26]. The reproducibility record should state the community-detection method, label-alignment procedure, overlap threshold, and treatment of overlapping CollegeMsg windows. Bitcoin-OTC is a signed trust network. We therefore do not assign market-cycle labels unless an external price series and a clearly defined segmentation rule are available.")
